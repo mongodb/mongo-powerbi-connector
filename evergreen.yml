@@ -200,7 +200,7 @@ tasks:
 buildvariants:
   - name: windows
     display_name: "Windows"
-    run_on: [ windows-64-vs2019-large]
+    run_on: [ windows-64-vs2019-large ]
     tasks:
       - name: build
       - name: unit-test
