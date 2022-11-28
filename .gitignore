@@ -3,3 +3,6 @@
 *.log
 tmp/
 .envrc
+tools/
+*.pqx
+*.mez
