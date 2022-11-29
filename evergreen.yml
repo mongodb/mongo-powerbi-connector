@@ -129,8 +129,8 @@ functions:
   "upload release":
     - command: s3.put
       params:
-        aws_key: ${aws_key}
-        aws_secret: ${aws_secret}
+        aws_key: ${release_aws_key}
+        aws_secret: ${release_aws_secret}
         local_file: mongo-powerbi-connector/MongoDBAtlasODBC-signed.pqx
         remote_file: mongo-powerbi-connector/MongoDBAtlasODBC-${MONGO_POWERBI_CONNECTOR_VERSION}.pqx
         bucket: translators-connectors-releases
