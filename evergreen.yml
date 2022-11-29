@@ -36,11 +36,6 @@ functions:
           tools/MakePQX.exe compile connector/
           tools/MakePQX.exe pack -mz connector/bin/AnyCPU/Debug/connector.mez -t MongoDBAtlasODBC.pqx
 
-  "fetch source":
-    - command: git.get_project
-      params:
-        directory: mongo-powerbi-connector
-
   "fetch packaged connector":
     - command: s3.get
       params:
@@ -58,6 +53,11 @@ functions:
         remote_file: mongo-powerbi-connector/artifacts/${version_id}/${build_variant}/MongoDBAtlasODBC-signed.pqx
         local_file: mongo-powerbi-connector/MongoDBAtlasODBC-signed.pqx
         bucket: mciuploads
+
+  "fetch source":
+    - command: git.get_project
+      params:
+        directory: mongo-powerbi-connector
 
   "generate expansions":
     - command: shell.exec
