@@ -89,7 +89,7 @@ functions:
         working_dir: mongo-powerbi-connector
         script: |
           ${prepare_shell}
-          curl  -L -o tools.zip https://www.nuget.org/api/v2/package/Microsoft.PowerQuery.SdkTools/2.111.5
+          curl  -L -o tools.zip https://www.nuget.org/api/v2/package/Microsoft.PowerQuery.SdkTools/
           unzip -n tools.zip
           chmod -R +x tools/*
 
