@@ -22,6 +22,38 @@ timeout:
         ls -la
 
 functions:
+  "build connector":
+    - command: shell.exec
+      params:
+        shell: bash
+        working_dir: mongo-powerbi-connector
+        script: |
+          ${prepare_shell}
+          if $UPDATE_PLUGIN_VERSION; then
+            sed -i "s/\[Version = \"0.0.0\"\]/\[Version = \"${MONGO_POWERBI_CONNECTOR_VERSION}\"\]/g" \
+              connector/MongoDBAtlasODBC.pq
+          fi
+          tools/MakePQX.exe compile connector/
+          tools/MakePQX.exe pack -mz connector/bin/AnyCPU/Debug/connector.mez -t MongoDBAtlasODBC.pqx
+
+  "fetch packaged connector":
+    - command: s3.get
+      params:
+        aws_key: ${aws_key}
+        aws_secret: ${aws_secret}
+        remote_file: mongo-powerbi-connector/artifacts/${version_id}/${build_variant}/MongoDBAtlasODBC.pqx
+        local_file: mongo-powerbi-connector/MongoDBAtlasODBC.pqx
+        bucket: mciuploads
+
+  "fetch signed connector":
+    - command: s3.get
+      params:
+        aws_key: ${aws_key}
+        aws_secret: ${aws_secret}
+        remote_file: mongo-powerbi-connector/artifacts/${version_id}/${build_variant}/MongoDBAtlasODBC-signed.pqx
+        local_file: mongo-powerbi-connector/MongoDBAtlasODBC-signed.pqx
+        bucket: mciuploads
+
   "fetch source":
     - command: git.get_project
       params:
@@ -33,30 +65,97 @@ functions:
         shell: bash
         working_dir: mongo-powerbi-connector
         script: |
+          export MONGO_POWERBI_CONNECTOR_VERSION=$(git describe --always | sed 's/^v//g')
+          export UPDATE_PLUGIN_VERSION=true
+          git describe --exact-match HEAD || UPDATE_PLUGIN_VERSION=false
+
           cat <<EOT > expansions.yml
+          MONGO_POWERBI_CONNECTOR_VERSION: "$MONGO_POWERBI_CONNECTOR_VERSION"
+          UPDATE_PLUGIN_VERSION: "$UPDATE_PLUGIN_VERSION"
           prepare_shell: |
             set -o errexit
             export PATH="$PATH"
+            export MONGO_POWERBI_CONNECTOR_VERSION="$MONGO_POWERBI_CONNECTOR_VERSION"
+            export UPDATE_PLUGIN_VERSION="$UPDATE_PLUGIN_VERSION"
           EOT
     - command: expansions.update
       params:
         file: mongo-powerbi-connector/expansions.yml
 
-  "build connector":
+  "install power query tools":
     - command: shell.exec
       params:
         shell: bash
         working_dir: mongo-powerbi-connector
         script: |
-          echo 'PLACEHOLDER' > mongodb-powerbi.pqx
+          ${prepare_shell}
+          curl  -L -o tools.zip https://www.nuget.org/api/v2/package/Microsoft.PowerQuery.SdkTools/
+          unzip -n tools.zip
+          chmod -R +x tools/*
 
-  "upload connector":
+  "run unit-test":
+    - command: shell.exec
+      params:
+        shell: bash
+        working_dir: mongo-powerbi-connector
+        script: |
+          ${prepare_shell}
+          # Currently only runs unit test specified in queryFile
+          # Output checking and credential setting to be done with SQL-1124
+          test_output=`tools/PQTest.exe run-test --extension MongoDBAtlasODBC.pqx --queryFile connector/MongoDBAtlasODBC.query.pq`
+          echo $test_output > MongoDBAtlasODBC.unit-test.log
+
+  "sign connector":
+    - command: shell.exec
+      type: system
+      params:
+        working_dir: mongo-powerbi-connector
+        script: | 
+          ${prepare_shell}
+          # SQL-1128: Implement signing for connector pqx file
+          cp MongoDBAtlasODBC.pqx MongoDBAtlasODBC-signed.pqx
+
+  "upload packaged connector":
     - command: s3.put
       params:
         aws_key: ${aws_key}
         aws_secret: ${aws_secret}
-        local_file: mongo-powerbi-connector/mongodb-powerbi.pqx
-        remote_file: mongo-powerbi-connector/artifacts/${version_id}/${build_variant}/mongodb-powerbi.pqx
+        local_file: mongo-powerbi-connector/MongoDBAtlasODBC.pqx
+        remote_file: mongo-powerbi-connector/artifacts/${version_id}/${build_variant}/MongoDBAtlasODBC.pqx
+        bucket: mciuploads
+        permissions: public-read
+        content_type: application/octet-stream
+
+  "upload release":
+    - command: s3.put
+      params:
+        aws_key: ${release_aws_key}
+        aws_secret: ${release_aws_secret}
+        local_file: mongo-powerbi-connector/MongoDBAtlasODBC-signed.pqx
+        remote_file: mongo-powerbi-connector/MongoDBAtlasODBC-${MONGO_POWERBI_CONNECTOR_VERSION}.pqx
+        bucket: translators-connectors-releases
+        permissions: public-read
+        display_name: MongoDBAtlasODBC-${MONGO_POWERBI_CONNECTOR_VERSION}.pqx
+        content_type: application/octet-stream
+
+  "upload signed connector":
+    - command: s3.put
+      params:
+        aws_key: ${aws_key}
+        aws_secret: ${aws_secret}
+        local_file: mongo-powerbi-connector/MongoDBAtlasODBC-signed.pqx
+        remote_file: mongo-powerbi-connector/artifacts/${version_id}/${build_variant}/MongoDBAtlasODBC-signed.pqx
+        bucket: mciuploads
+        permissions: public-read
+        content_type: application/octet-stream
+
+  "upload unit-test logs":
+    - command: s3.put
+      params:
+        aws_key: ${aws_key}
+        aws_secret: ${aws_secret}
+        local_file: mongo-powerbi-connector/MongoDBAtlasODBC.unit-test.log
+        remote_file: mongo-powerbi-connector/artifacts/${version_id}/${build_variant}/MongoDBAtlasODBC.unit-test.log
         bucket: mciuploads
         permissions: public-read
         content_type: application/octet-stream
@@ -64,20 +163,46 @@ functions:
 pre:
   - func: "fetch source"
   - func: "generate expansions"
-
+  - func: "install power query tools"
 post: []
 
 tasks:
-
   - name: build
     commands:
       - func: "build connector"
-      - func: "upload connector"
+      - func: "upload packaged connector"
+
+  - name: unit-test
+    depends_on:
+      - name: build
+    commands:
+      - func: "fetch packaged connector"
+      - func: "run unit-test"
+      - func: "upload unit-test logs"
+
+  - name: sign
+    depends_on:
+      - name: build
+      - name: unit-test
+    commands:
+      - func: "fetch packaged connector"
+      - func: "sign connector"
+      - func: "upload signed connector"
+
+  - name: release
+    git_tag_only: true
+    depends_on:
+      - name: sign
+    commands:
+      - func: "fetch signed connector"
+      - func: "upload release"
 
 buildvariants:
-
   - name: windows
     display_name: "Windows"
     run_on: [ windows-64-vs2019-large ]
     tasks:
       - name: build
+      - name: unit-test
+      - name: sign
+      - name: release
