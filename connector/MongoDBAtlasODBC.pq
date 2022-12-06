@@ -106,6 +106,9 @@ BuildOdbcConfig = () as record =>
     in
         Config;
 
+// ValidateOptions checks that the options are supported according to the validOptionsMap.
+// Returns a record of validated key/values.  
+// Function is from SqlODBC example.
 ValidateOptions = (options as nullable record, validOptionsMap as table) as record =>
     let
         ValidKeys = Table.Column(validOptionsMap, "Name"),
