@@ -142,4 +142,3 @@ ValidateOptions = (options as nullable record, validOptionsMap as table) as reco
             error Error.Record("Expression.Error", Text.Combine(InvalidValues, ", "))
         else
             NormalizedOptions;
-            
