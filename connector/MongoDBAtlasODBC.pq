@@ -36,11 +36,9 @@ in
 GetCredentialConnectionString = () as record =>
     let
         Credential = Extension.CurrentCredential(),
-        EncryptionEnabled = Credential[EncryptConnection]? = true,
         CredentialConnectionString = [
             UID = Credential[Username],
-            PWD = Credential[Password],
-            SSL = if EncryptionEnabled then 1 else 0
+            PWD = Credential[Password]
         ]
     in
         CredentialConnectionString;
