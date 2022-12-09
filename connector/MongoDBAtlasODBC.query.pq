@@ -1,5 +1,5 @@
-﻿// Use this file to write queries to test your data connector
+// Use this file to write queries to test your data connector
 let
-    result = MongoDBAtlasODBC.Contents()
+    result = MongoDBAtlasODBC.Contents("", "")
 in
     result
