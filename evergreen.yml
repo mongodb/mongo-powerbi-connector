@@ -102,10 +102,10 @@ functions:
           ${prepare_shell}
           # Credential setting to be done with SQL-1124
           test_output=`tools/PQTest.exe run-test --extension MongoDBAtlasODBC.pqx --queryFile connector/MongoDBAtlasODBC.query.pq`
-          failures=`echo $test_output  | grep -Eo '"Result"[^}]*' | grep Failure`
+          failures=`echo $test_output  | grep -Eo '"Result"[^}]*' | grep Failure || true` 
           echo $test_output > MongoDBAtlasODBC.unit-test.log 
-
           if [[ ! -z $failures ]]; then 
+            echo "Failures Encountered:"
             echo $failures
             exit 1
           fi
@@ -169,7 +169,8 @@ pre:
   - func: "fetch source"
   - func: "generate expansions"
   - func: "install power query tools"
-post: []
+post: 
+  - func: "upload unit-test logs"
 
 tasks:
   - name: build
@@ -183,7 +184,6 @@ tasks:
     commands:
       - func: "fetch packaged connector"
       - func: "run unit-test"
-      - func: "upload unit-test logs"
 
   - name: sign
     depends_on:

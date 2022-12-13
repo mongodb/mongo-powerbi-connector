@@ -16,7 +16,7 @@ shared UnitTests =
           GetConnectionString("mongodb://localhost/pathauthsrc", "test", [])
         ),
         Fact("GetConnectionString - AuthSource option only",
-          [ DRIVER = "ADF_ODBC_DRIVER", DATABASE = "test2", SERVER = "localhost:27017", AUTH_SRC = "optionauthsrc" ],
+          [ DRIVER = "ADF_ODBC_DRIVER", DATABASE = "test", SERVER = "localhost:27017", AUTH_SRC = "optionauthsrc" ],
           GetConnectionString("mongodb://localhost/?authSource=optionauthsrc", "test", [])
         ),
         Fact("GetConnectionString - SSL option set",
