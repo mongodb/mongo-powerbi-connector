@@ -100,10 +100,15 @@ functions:
         working_dir: mongo-powerbi-connector
         script: |
           ${prepare_shell}
-          # Currently only runs unit test specified in queryFile
-          # Output checking and credential setting to be done with SQL-1124
+          # Credential setting to be done with SQL-1124
           test_output=`tools/PQTest.exe run-test --extension MongoDBAtlasODBC.pqx --queryFile connector/MongoDBAtlasODBC.query.pq`
-          echo $test_output > MongoDBAtlasODBC.unit-test.log
+          failures=`echo $test_output  | grep -Eo '"Result"[^}]*' | grep Failure`
+          echo $test_output > MongoDBAtlasODBC.unit-test.log 
+
+          if [[ ! -z $failures ]]; then 
+            echo $failures
+            exit 1
+          fi
 
   "sign connector":
     - command: shell.exec

@@ -29,15 +29,11 @@ MongoDBAtlasODBCImpl = (mongodbUri as text, database as text, optional options a
             }
         ),
         ValidatedOptions = ValidateOptions(options, ValidOptionsMap),
-        Uri = ProcessUri(mongodbUri),
-        ConnectionString = [
-            APPLICATION_NAME = if ValidatedOptions[ApplicationName] <> null then ValidatedOptions[ApplicationName] else "MongoDB Atlas SQL - PowerBI",
-            DRIVER = "ADF_ODBC_DRIVER"
-        ],
+        ConnectionString = GetConnectionString(mongodbUri, database, ValidatedOptions),
         CredentialConnectionString = GetCredentialConnectionString(),
         Config = BuildOdbcConfig(),
         OdbcDatasource = Odbc.DataSource(ConnectionString, Config
-            & [ CredentialConnectionString = CredentialConnectionString ])
+            & [ CredentialConnectionString = CredentialConnectionString])
     in
         OdbcDatasource;
 
@@ -51,12 +47,72 @@ GetCredentialConnectionString = () as record =>
     in
         CredentialConnectionString;
 
-// SQL-1117: Implement ProcessUri Function
-ProcessUri = (uri as text) as record => 
+NullFieldCheck = (field as any, fieldName as text ) =>
+    let 
+        EmptyRecord = [],
+        Result = if field <> null then Record.AddField(EmptyRecord, fieldName, field) else EmptyRecord
+    in
+        Result;
+
+ProcessAuthSrc = (queryEntry as any, pathEntry as any) =>
     let
-        Result = []
+        DefaultAuthSrc = "admin",
+        FieldName = "AUTH_SRC",
+        EmptyRecord = [],
+        // authSource connection option takes precedence over the defaultauthdb  value in the connection string.
+        // If both are unspecified, then authSource defaults to 'admin'.
+        AuthSrc =    if queryEntry <> null then
+                        queryEntry
+                    else if pathEntry <> null and Text.Length(Text.Remove(pathEntry, "/")) > 0 then
+                        Text.Remove(pathEntry, "/")
+                    else
+                        DefaultAuthSrc,
+        Result = Record.AddField(EmptyRecord, FieldName, AuthSrc)
     in 
         Result;
+
+ProcessUri = (uri as text) as any => 
+    let
+        DefaultPort = "27017",
+        UriParts = Uri.Parts(uri),
+        BadUri = UriParts[Host] = "" or UriParts[Fragment] <> ""
+            or UriParts[UserName] <> "" or UriParts[Password] <> "",
+        // http and https schemes automatically set port values to 80 and 443 respectively.
+        // The following checks whether the user has set the port values explicitly to 80 or 443.
+        // An unknown scheme will set the port value to -1 if it is not specified
+        Port =  if  (UriParts[Port] = 80 and not Text.Contains(uri, ":80")) or
+                    (UriParts[Port] = 443 and not Text.Contains(uri, ":443")) or
+                    UriParts[Port] = -1 then
+                    DefaultPort
+                else
+                    Number.ToText(UriParts[Port]),
+        SSL = NullFieldCheck(UriParts[Query][ssl]?, "SSL"),
+        TLS = NullFieldCheck(UriParts[Query][tls]?, "TLS"),
+        AuthSrc = ProcessAuthSrc(UriParts[Query][authSource]?, UriParts[Path]?),
+        Server = Text.Combine({UriParts[Host], ":", Port}),
+        Result =  Record.Combine({[ SERVER =  Server ], SSL, TLS, AuthSrc})
+    in 
+        if BadUri then 
+            error "Invalid URI"
+        else
+             Result;
+
+shared GetConnectionString = (uri as text, database as text, options as record) as record =>
+    let 
+        Uri = ProcessUri(uri),
+        AppName = options[ApplicationName]?,
+        DatabaseNotSet = database = "",
+        ConnectionString = [
+            // SQL-1147: Connection string not accepting 'application_name'
+            // APPLICATION_NAME = if AppName <> null then AppName else "MongoDB Atlas SQL - PowerBI",
+            DRIVER = "ADF_ODBC_DRIVER",
+            DATABASE = database
+        ] & Uri
+    in 
+        if DatabaseNotSet then
+            error "Database value cannot be empty"
+        else
+            ConnectionString;
 
 // Data Source Kind description
 MongoDBAtlasODBC = [
@@ -85,6 +141,7 @@ MongoDBAtlasODBC.Icons = [
 BuildOdbcConfig = () as record =>
     let
         Config = [
+            HierarchicalNavigation = true,
             SqlCapabilities = [
                 FractionalSecondsScale = 3,
                 LimitClauseKind = LimitClauseKind.LimitOffset,
