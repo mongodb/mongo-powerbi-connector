@@ -33,7 +33,7 @@ MongoDBAtlasODBCImpl = (mongodbUri as text, database as text, optional options a
         CredentialConnectionString = GetCredentialConnectionString(),
         Config = BuildOdbcConfig(),
         OdbcDatasource = Odbc.DataSource(ConnectionString, Config
-            & [ CredentialConnectionString = CredentialConnectionString])
+            & [ CredentialConnectionString = CredentialConnectionString ])
     in
         OdbcDatasource;
 
@@ -49,8 +49,7 @@ GetCredentialConnectionString = () as record =>
 
 NullFieldCheck = (field as any, fieldName as text ) =>
     let 
-        EmptyRecord = [],
-        Result = if field <> null then Record.AddField(EmptyRecord, fieldName, field) else EmptyRecord
+        Result = if field <> null then Record.AddField([], fieldName, field) else []
     in
         Result;
 
@@ -58,7 +57,6 @@ ProcessAuthSrc = (queryEntry as any, pathEntry as any) =>
     let
         DefaultAuthSrc = "admin",
         FieldName = "AUTH_SRC",
-        EmptyRecord = [],
         // authSource connection option takes precedence over the defaultauthdb  value in the connection string.
         // If both are unspecified, then authSource defaults to 'admin'.
         AuthSrc =    if queryEntry <> null then
@@ -67,7 +65,7 @@ ProcessAuthSrc = (queryEntry as any, pathEntry as any) =>
                         Text.Remove(pathEntry, "/")
                     else
                         DefaultAuthSrc,
-        Result = Record.AddField(EmptyRecord, FieldName, AuthSrc)
+        Result = Record.AddField([], FieldName, AuthSrc)
     in 
         Result;
 
