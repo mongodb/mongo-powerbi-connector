@@ -25,7 +25,12 @@ MongoDBAtlasODBCImpl = (mongodbUri as text, database as text, optional options a
         ValidOptionsMap = #table(
             {"Name","Type","Description","Default","Validate"},
             {
-                {"ApplicationName", type nullable text, "Enter a value to use as the Application Name in the SQL traces", null, each _ = null or _ <> null}
+                {
+                    "ApplicationName", type nullable text, 
+                    "Enter a value to use as the Application Name in the SQL traces", 
+                    null, 
+                    each _ = null or _ <> null
+                }
             }
         ),
         ValidatedOptions = ValidateOptions(options, ValidOptionsMap),
@@ -57,7 +62,7 @@ ProcessAuthSrc = (queryEntry as any, pathEntry as any) =>
     let
         DefaultAuthSrc = "admin",
         FieldName = "AUTH_SRC",
-        // authSource connection option takes precedence over the defaultauthdb  value in the connection string.
+        // The 'authSource' connection option takes precedence over the /defaultauthdb value in the connection string.
         // If both are unspecified, then authSource defaults to 'admin'.
         AuthSrc =    if queryEntry <> null then
                         queryEntry
