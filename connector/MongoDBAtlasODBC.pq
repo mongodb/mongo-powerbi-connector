@@ -15,12 +15,22 @@ MongoDBAtlasODBCType = type function(
         Documentation.FieldDescription = "Database to connect to",
         Documentation.SampleValues = {"db"}
     ]),
+    optional query as (type text meta [
+        Documentation.FieldCaption = "SQL Statement",
+        Documentation.SampleValues = {"SELECT * from table"},
+        Formatting.IsMultiLine = true,
+        Formatting.IsCode = true
+    ]),
     optional options as record)
     as table meta [
         Documentation.Name = "MongoDB Atlas SQL"
     ];
 
-MongoDBAtlasODBCImpl = (mongodbUri as text, database as text, optional options as record) as table => 
+MongoDBAtlasODBCImpl = (mongodbUri as text, 
+                        database as text, 
+                        optional query as text, 
+                        optional options as record) 
+                        as table => 
     let
         ValidOptionsMap = #table(
             {"Name","Type","Description","Default","Validate"},
@@ -36,10 +46,12 @@ MongoDBAtlasODBCImpl = (mongodbUri as text, database as text, optional options a
         ],
         CredentialConnectionString = GetCredentialConnectionString(),
         Config = BuildOdbcConfig(),
-        OdbcDatasource = Odbc.DataSource(ConnectionString, Config
-            & [ CredentialConnectionString = CredentialConnectionString ])
+        Result =    if query <> null then
+                        Odbc.Query(ConnectionString, query,  [ CredentialConnectionString = CredentialConnectionString ])
+                    else
+                        Odbc.DataSource(ConnectionString, Config & [ CredentialConnectionString = CredentialConnectionString ])
     in
-        OdbcDatasource;
+        Result;
 
 GetCredentialConnectionString = () as record =>
     let
