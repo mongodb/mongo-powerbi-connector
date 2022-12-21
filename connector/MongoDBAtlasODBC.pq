@@ -17,7 +17,8 @@ MongoDBAtlasODBCType = type function(
     ]),
     optional query as (type text meta [
         Documentation.FieldCaption = "SQL Statement",
-        Documentation.SampleValues = {"SELECT * from table"},
+        Documentation.SampleValues = {"SELECT * FROM table"},
+
         Formatting.IsMultiLine = true,
         Formatting.IsCode = true
     ]),
