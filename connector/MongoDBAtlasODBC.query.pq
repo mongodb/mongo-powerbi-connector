@@ -4,12 +4,12 @@ shared UnitTests =
     facts = 
     {
         Fact("GetConnectionString - Sets URI option",
-          [ APPLICATION_NAME = "MongoDB Atlas SQL - PowerBI", DRIVER = "ADF_ODBC_DRIVER", DATABASE = "db", URI = "mongodb://hostname:port/admin?ssl=true" ],
-          GetConnectionString("mongodb://hostname:port/admin?ssl=true", "db",  [])
+          [ APPLICATION_NAME = "MongoDB Atlas SQL - PowerBI", DRIVER = "ADF_ODBC_DRIVER", DATABASE = "db", URI = "mongodb://hostname/admin?ssl=true" ],
+          GetConnectionString("mongodb://hostname/admin?ssl=true", "db",  [])
         ),
         Fact("GetConnectionString - Sets URI option",
-          [ APPLICATION_NAME = "Test Application", DRIVER = "ADF_ODBC_DRIVER", DATABASE = "db_test", URI = "mongodb://hostname:port/admin?ssl=true" ],
-          GetConnectionString("mongodb://hostname:port/admin?ssl=true", "db_test",  [ APPLICATION_NAME = "Test Application" ])
+          [ APPLICATION_NAME = "Test Application", DRIVER = "ADF_ODBC_DRIVER", DATABASE = "db_test", URI = "mongodb://localhost:27017/admin?ssl=false" ],
+          GetConnectionString("mongodb://localhost:27017/admin?ssl=false", "db_test",  [ APPLICATION_NAME = "Test Application" ])
         )
     },
     report = Facts.Summarize(facts)
