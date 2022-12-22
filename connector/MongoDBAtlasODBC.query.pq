@@ -3,45 +3,13 @@ shared UnitTests =
 [
     facts = 
     {
-        Fact("GetConnectionString - Simple URI",
-          [ DRIVER = "ADF_ODBC_DRIVER", DATABASE = "db", SERVER = "localhost:27017", AUTH_SRC = "admin" ],
-          GetConnectionString("localhost", "db",  [])
+        Fact("GetConnectionString - Sets URI option",
+          [ APPLICATION_NAME = "MongoDB Atlas SQL - PowerBI", DRIVER = "ADF_ODBC_DRIVER", DATABASE = "db", URI = "mongodb://hostname:port/admin?ssl=true" ],
+          GetConnectionString("mongodb://hostname:port/admin?ssl=true", "db",  [])
         ),
-        Fact("GetConnectionString - All options set",
-          [ DRIVER = "ADF_ODBC_DRIVER", DATABASE = "db2", SERVER = "host.com:12345", SSL = "false",  TLS = "true", AUTH_SRC = "optionauthsrc" ],
-          GetConnectionString("mongodb+srv://host.com:12345/pathauthsrc?authSource=optionauthsrc&ssl=false&tls=true", "db2", [ ApplicationName = "{Testing AppName}"])
-        ),
-          Fact("GetConnectionString - AuthSource path only",
-          [ DRIVER = "ADF_ODBC_DRIVER", DATABASE = "test", SERVER = "localhost:27017", AUTH_SRC = "pathauthsrc" ],
-          GetConnectionString("mongodb://localhost/pathauthsrc", "test", [])
-        ),
-        Fact("GetConnectionString - AuthSource option only",
-          [ DRIVER = "ADF_ODBC_DRIVER", DATABASE = "test", SERVER = "localhost:27017", AUTH_SRC = "optionauthsrc" ],
-          GetConnectionString("mongodb://localhost/?authSource=optionauthsrc", "test", [])
-        ),
-        Fact("GetConnectionString - SSL option set",
-          [ DRIVER = "ADF_ODBC_DRIVER", DATABASE = "test", SERVER = "mongodb:27018", SSL = "true", AUTH_SRC = "admin" ],
-          GetConnectionString("mongodb:27018?ssl=true", "test",[])
-        ),
-        Fact("GetConnectionString - TLS option set",
-          [ DRIVER = "ADF_ODBC_DRIVER", DATABASE = "test", SERVER = "mongodb:27018", TLS = "false", AUTH_SRC = "admin" ],
-          GetConnectionString("mongodb:27018?tls=false", "test",[])
-        ),
-        Fact("GetConnectionString - Empty database value results in error",
-          "Database value cannot be empty",
-          try GetConnectionString("localhost","", [])  catch (e)  => e[Message]
-        ),
-        Fact("GetConnectionString - Empty host value results in error",
-          "Invalid URI: The hostname could not be parsed.",
-          try GetConnectionString("","db", [])  catch (e)  => e[Message]
-        ),
-        Fact("GetConnectionString - Username/Password in URI results in error",
-          "Invalid URI",
-          try GetConnectionString("mongodb://user:pass@localhost","db", []) catch (e)  => e[Message]
-        ), 
-        Fact("GetConnectionString - Fragment values in URI results in error",
-          "Invalid URI",
-          try GetConnectionString("mongodb://localhost/admin#fragment","db", [])  catch (e)  => e[Message]
+        Fact("GetConnectionString - Sets URI option",
+          [ APPLICATION_NAME = "Test Application", DRIVER = "ADF_ODBC_DRIVER", DATABASE = "db_test", URI = "mongodb://hostname:port/admin?ssl=true" ],
+          GetConnectionString("mongodb://hostname:port/admin?ssl=true", "db_test",  [ APPLICATION_NAME = "Test Application" ])
         )
     },
     report = Facts.Summarize(facts)
