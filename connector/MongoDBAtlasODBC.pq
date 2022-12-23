@@ -33,20 +33,7 @@ MongoDBAtlasODBCImpl = (mongodbUri as text,
                         optional options as record) 
                         as table => 
     let
-        ValidOptionsMap = #table(
-            {"Name","Type","Description","Default","Validate"},
-            {
-                {
-                    "APPLICATION_NAME", 
-                    type nullable text, 
-                    "Enter a value to use as the Application Name in the SQL traces", 
-                    null, 
-                    each _ = null or _ <> null
-                }
-            }
-        ),
-        ValidatedOptions = ValidateOptions(options, ValidOptionsMap),
-        ConnectionString = GetConnectionString(mongodbUri, database, ValidatedOptions),
+        ConnectionString = GetConnectionString(mongodbUri, database, []),
         CredentialConnectionString = GetCredentialConnectionString(),
         Config = BuildOdbcConfig(),
         Result =    if query <> null then
@@ -68,10 +55,8 @@ GetCredentialConnectionString = () as record =>
 
 shared GetConnectionString = (uri as text, database as text, options as record) as record =>
     let 
-        AppName = options[APPLICATION_NAME]?,
         DatabaseNotSet = (database = ""),
         ConnectionString = [
-            APPLICATION_NAME = if AppName <> null then AppName else "MongoDB Atlas SQL - PowerBI",
             DRIVER = "ADF_ODBC_DRIVER",
             DATABASE = database,
             URI = uri
@@ -130,40 +115,3 @@ BuildOdbcConfig = () as record =>
         ]
     in
         Config;
-
-// ValidateOptions checks that the options are supported according to the validOptionsMap.
-// Returns a record of validated key/values.  
-// Function is from SqlODBC example.
-ValidateOptions = (options as nullable record, validOptionsMap as table) as record =>
-    let
-        ValidKeys = Table.Column(validOptionsMap, "Name"),
-        InvalidKeys = List.Difference(Record.FieldNames(options), ValidKeys),
-        InvalidKeysText =
-            if List.IsEmpty(InvalidKeys) then
-                null
-            else
-                Text.Format(
-                    "'#{0}' are not valid options. Valid options are: '#{1}'",
-                    {Text.Combine(InvalidKeys, ", "), Text.Combine(ValidKeys, ", ")}
-                ),
-        ValidateValue = (name, optionType, description, default, validate, value) =>
-                if (value is null and (Type.IsNullable(optionType) or default <> null)) or (Type.Is(Value.Type(value), optionType) and validate(value)) then
-                    null
-                else
-                    Text.Format(
-                        "This function does not support the option '#{0}' with value '#{1}'. Valid value is #{2}.",
-                        {name, value, description}
-                    ),
-        InvalidValues = List.RemoveNulls(Table.TransformRows(validOptionsMap, each ValidateValue([Name],[Type],[Description],[Default],[Validate], Record.FieldOrDefault(options, [Name], [Default])))),
-        DefaultOptions = Record.FromTable(Table.RenameColumns(Table.SelectColumns(validOptionsMap,{"Name","Default"}),{"Default","Value"})),
-        NullNotAllowedFields = List.RemoveNulls(Table.TransformRows(validOptionsMap, each if not Type.IsNullable([Type]) and null = Record.FieldOrDefault(options, [Name], [Default]) then [Name] else null)),
-        NormalizedOptions = DefaultOptions & Record.RemoveFields(options, NullNotAllowedFields, MissingField.Ignore)
-    in
-        if null = options then 
-            DefaultOptions
-        else if not List.IsEmpty(InvalidKeys) then
-            error Error.Record("Expression.Error", InvalidKeysText)
-        else if not List.IsEmpty(InvalidValues) then
-            error Error.Record("Expression.Error", Text.Combine(InvalidValues, ", "))
-        else
-            NormalizedOptions;
