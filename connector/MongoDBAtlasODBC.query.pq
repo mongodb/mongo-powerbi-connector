@@ -10,6 +10,10 @@ shared UnitTests =
         Fact("GetConnectionString - Sets URI option",
           [ APPLICATION_NAME = "Test Application", DRIVER = "ADF_ODBC_DRIVER", DATABASE = "db_test", URI = "mongodb://localhost:27017/admin?ssl=false" ],
           GetConnectionString("mongodb://localhost:27017/admin?ssl=false", "db_test",  [ APPLICATION_NAME = "Test Application" ])
+        ),
+        Fact("GetConnectionString - Empty database value results in error",
+          "Database value cannot be empty",
+          try GetConnectionString("localhost","", [])  catch (e)  => e[Message]
         )
     },
     report = Facts.Summarize(facts)
