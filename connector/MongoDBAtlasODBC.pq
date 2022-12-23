@@ -33,7 +33,7 @@ MongoDBAtlasODBCImpl = (mongodbUri as text,
                         optional options as record) 
                         as table => 
     let
-        ConnectionString = GetConnectionString(mongodbUri, database, []),
+        ConnectionString = GetConnectionString(mongodbUri, database),
         CredentialConnectionString = GetCredentialConnectionString(),
         Config = BuildOdbcConfig(),
         Result =    if query <> null then
@@ -53,7 +53,7 @@ GetCredentialConnectionString = () as record =>
     in
         CredentialConnectionString;
 
-shared GetConnectionString = (uri as text, database as text, options as record) as record =>
+shared GetConnectionString = (uri as text, database as text) as record =>
     let 
         DatabaseNotSet = (database = ""),
         ConnectionString = [
