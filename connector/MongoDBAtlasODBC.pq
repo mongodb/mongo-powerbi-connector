@@ -8,7 +8,7 @@ MongoDBAtlasODBCType = type function(
     mongodbUri as (type text meta[
         Documentation.FieldCaption = "MongoDB URI",
         Documentation.FieldDescription = "MongoDB connection URI",
-        Documentation.SampleValues = {"mongodb://hostname:port/admin?ssl=true"}
+        Documentation.SampleValues = {"mongodb://hostname:port/?ssl=true&authSource=admin"}
     ]), 
     database as (type text meta [
         Documentation.FieldCaption = "Database",
