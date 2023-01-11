@@ -69,6 +69,13 @@ shared GetConnectionString = (uri as text, database as text) as record =>
 
 // Data Source Kind description
 MongoDBAtlasODBC = [
+    TestConnection = (dataSourcePath) =>
+        let
+            json = Json.Document(dataSourcePath),
+            mongodbUri = json[mongodbUri],
+            database = json[database]
+        in
+            { "MongoDBAtlasODBC.Contents", mongodbUri, database },
     Authentication = [
         UsernamePassword = []
     ],
