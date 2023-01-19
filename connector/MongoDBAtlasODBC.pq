@@ -69,6 +69,8 @@ shared GetConnectionString = (uri as text, database as text) as record =>
 
 // Data Source Kind description
 MongoDBAtlasODBC = [
+    // The TestConnection handler to enables gateway support.
+    // It will invoke the data source function to validate the credentials the user has provided.
     TestConnection = (dataSourcePath) =>
         let
             json = Json.Document(dataSourcePath),
