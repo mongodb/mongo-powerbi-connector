@@ -93,7 +93,19 @@ MongoDBAtlasODBC.Icons = [
 
 BuildOdbcConfig = () as record =>
     let
+        AstVisitor = [
+            LimitClause = (skip, take) =>
+        let
+            offset = if (skip > 0) then Text.Format("OFFSET #{0}", {skip}) else "",
+            limit = if (take <> null) then Text.Format("LIMIT #{0}", {take}) else ""
+        in
+            [
+                Text = Text.Format("#{0} #{1}", {offset, limit}),
+                Location = "AfterQuerySpecification"
+            ]
+        ],
         Config = [
+            AstVisitor = AstVisitor,
             HierarchicalNavigation = true,
             SqlCapabilities = [
                 FractionalSecondsScale = 3,
