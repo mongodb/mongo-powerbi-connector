@@ -10,10 +10,73 @@ shared UnitTests =
         Fact("GetConnectionString - Empty database value results in error",
           "Database value cannot be empty",
           try GetConnectionString("localhost","")  catch (e)  => e[Message]
+        ),
+        Fact("TransformColumnKeepType - Transform columns of table in 'Transform' column",
+          { #table( type table [Array = text, Binary = binary] , {} )},
+          TransformColumnKeepType(GetDatabaseWithBsonTable(), "Transform", TransformSqlUnknownColumns)[Transform]
+        ),
+        Fact("TransformSqlUnknownColumns - SQL_UNKNOWN_TYPE columns transform to Text.Type",
+          { "Text.Type", 
+            "Text.Type", 
+            "Text.Type", 
+            "Text.Type", 
+            "Text.Type", 
+            "Text.Type", 
+            "Text.Type", 
+            "Text.Type", 
+            "Text.Type", 
+            "Text.Type", 
+            "Text.Type", 
+            "Text.Type", 
+            "Text.Type", 
+            "Text.Type", 
+            "Date.Type", 
+            "Number.Type", 
+            "Logical.Type", 
+            "Binary.Type"},
+           Table.Schema(TransformSqlUnknownColumns(GetTableWithBsonTypes()))[TypeName]
+
         )
     },
     report = Facts.Summarize(facts)
 ][report];
+
+GetTableWithBsonTypes = () as table =>
+let
+  Type = type table [
+    Array = (Type.ReplaceFacets(type binary, [NativeTypeName = "array"] )),
+    DbPointer = (Type.ReplaceFacets(type binary, [NativeTypeName = "dbPointer"] )),
+    Decimal = (Type.ReplaceFacets(type binary, [NativeTypeName = "decimal"] )),
+    Javascript = (Type.ReplaceFacets(type binary, [NativeTypeName = "javascript"] )),
+    JavascriptWithScope = (Type.ReplaceFacets(type binary, [NativeTypeName = "javascriptWithScope"] )),
+    MaxKey = (Type.ReplaceFacets(type binary, [NativeTypeName = "maxKey"] )),
+    MinKey = (Type.ReplaceFacets(type binary, [NativeTypeName = "minKey"] )),
+    Null = (Type.ReplaceFacets(type binary, [NativeTypeName = "null"] )),
+    Object = (Type.ReplaceFacets(type binary, [NativeTypeName = "object"] )),
+    ObjectId = (Type.ReplaceFacets(type binary, [NativeTypeName = "objectId"] )),
+    Regex = (Type.ReplaceFacets(type binary, [NativeTypeName = "regex"] )),
+    Symbol = (Type.ReplaceFacets(type binary, [NativeTypeName = "symbol"] )),
+    TimeStamp = (Type.ReplaceFacets(type binary, [NativeTypeName = "timestamp"] )),
+    Undefined = (Type.ReplaceFacets(type binary, [NativeTypeName = "undefined"] )),
+    Date = (Type.ReplaceFacets(type date, [NativeTypeName = "date"] )),
+    Number = (Type.ReplaceFacets(type number, [NativeTypeName = "int"] )),
+    Logical = (Type.ReplaceFacets(type logical, [NativeTypeName = "bool"] )),
+    Binary = (Type.ReplaceFacets(type binary, [NativeTypeName = "binData"] ))
+  ],
+  Table = #table(Type, {})
+in
+ Table;
+
+GetDatabaseWithBsonTable = () as table =>
+    let
+        Type = type table [
+            Array = (Type.ReplaceFacets(type binary, [NativeTypeName = "array"] )),
+            Binary = (Type.ReplaceFacets(type binary, [NativeTypeName = "binData"] ))
+        ],
+        Table = #table(Type, {}),
+        Database = #table({"Transform"},{{Table}})
+    in
+        Database;
 
 GetExpectedError = (function as any) as text =>
   let
@@ -21,7 +84,6 @@ GetExpectedError = (function as any) as text =>
             catch (e) => e[Message]
   in
     Error;
-
 
 /// COMMON UNIT TESTING CODE - From DataConnectors/UnitTesting 
 Fact = (_subject as text, _expected, _actual) as record =>

@@ -36,12 +36,25 @@ MongoDBAtlasODBCImpl = (mongodbUri as text,
         ConnectionString = GetConnectionString(mongodbUri, database),
         CredentialConnectionString = GetCredentialConnectionString(),
         Config = BuildOdbcConfig(),
-        Result =    if query <> null then
+        DataSource =    if query <> null then
                         Odbc.Query(ConnectionString, query,  [ CredentialConnectionString = CredentialConnectionString ])
                     else
-                        Odbc.DataSource(ConnectionString, Config & [ CredentialConnectionString = CredentialConnectionString ])
+                        Odbc.DataSource(ConnectionString, Config & [ CredentialConnectionString = CredentialConnectionString ]),
+        
+        Metadata = Value.Metadata(Value.Type(DataSource)),
+        TransformColumns = 
+            let
+                TransformColumns =  if query <> null then 
+                                        TransformSqlUnknownColumns(DataSource)
+                                    else
+                                        TransformColumnKeepType(DataSource, "Data", 
+                                            (tables) => TransformColumnKeepType(tables, "Data",
+                                                TransformSqlUnknownColumns))
+            in
+                TransformColumns,
+        WithMetadata = Value.ReplaceType(TransformColumns, Value.ReplaceMetadata(Value.Type(DataSource), Metadata))
     in
-        Result;
+        WithMetadata;
 
 GetCredentialConnectionString = () as record =>
     let
@@ -52,6 +65,45 @@ GetCredentialConnectionString = () as record =>
         ]
     in
         CredentialConnectionString;
+
+// Transforms the columns that the driver specifies as SQL_UNKNOWN_TYPE from binary to text values
+shared TransformSqlUnknownColumns = (table) => 
+    let
+        TableType = Value.Type(table),
+        Schema = Table.Schema(table),                        
+        SqlUnknownColumns = Table.ToRecords(Table.SelectRows(Schema, 
+            each [NativeTypeName] = "array"
+            or [NativeTypeName] = "dbPointer"
+            or [NativeTypeName] = "decimal"
+            or [NativeTypeName] = "javascript"
+            or [NativeTypeName] = "javascriptWithScope"
+            or [NativeTypeName] = "maxKey" 
+            or [NativeTypeName] = "minKey"
+            or [NativeTypeName] = "null"
+            or [NativeTypeName] = "object"
+            or [NativeTypeName] = "objectId"
+            or [NativeTypeName] = "regex"
+            or [NativeTypeName] = "symbol"
+            or [NativeTypeName] = "timestamp" 
+            or [NativeTypeName] = "undefined"
+            )),
+        TransformOperations = List.Accumulate(SqlUnknownColumns, table, (state, column) =>
+            let
+                ColumnType = Type.TableColumn(TableType, column[Name]),
+                TransformColumn = Table.TransformColumns(state, { column[Name], Text.FromBinary })
+            in
+                TransformColumn)
+    in
+        TransformOperations;
+
+// Executes operation on specified columnName of the passed in table
+shared TransformColumnKeepType = (table, columnName, operation) =>
+    let
+        TableType = Value.Type(table),
+        TransformColumn = Table.TransformColumns(table, { columnName, operation}),
+        ReplaceType = Value.ReplaceType(TransformColumn, TableType)
+    in
+        ReplaceType;
 
 shared GetConnectionString = (uri as text, database as text) as record =>
     let 
