@@ -71,25 +71,9 @@ shared TransformSqlUnknownColumns = (table) =>
     let
         TableType = Value.Type(table),
         Schema = Table.Schema(table),                        
-        SqlUnknownColumns = Table.ToRecords(Table.SelectRows(Schema, 
-            each [NativeTypeName] = "array"
-            or [NativeTypeName] = "dbPointer"
-            or [NativeTypeName] = "decimal"
-            or [NativeTypeName] = "javascript"
-            or [NativeTypeName] = "javascriptWithScope"
-            or [NativeTypeName] = "maxKey" 
-            or [NativeTypeName] = "minKey"
-            or [NativeTypeName] = "null"
-            or [NativeTypeName] = "object"
-            or [NativeTypeName] = "objectId"
-            or [NativeTypeName] = "regex"
-            or [NativeTypeName] = "symbol"
-            or [NativeTypeName] = "timestamp" 
-            or [NativeTypeName] = "undefined"
-            )),
-        TransformOperations = List.Accumulate(SqlUnknownColumns, table, (state, column) =>
+        SqlBinaryTypes = Table.ToRecords(Table.SelectRows(Schema,  each [TypeName] = "Binary.Type" and [NativeTypeName] <> "binData")),
+        TransformOperations = List.Accumulate(SqlBinaryTypes, table, (state, column) =>
             let
-                ColumnType = Type.TableColumn(TableType, column[Name]),
                 TransformColumn = Table.TransformColumns(state, { column[Name], Text.FromBinary })
             in
                 TransformColumn)
