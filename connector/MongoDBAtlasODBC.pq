@@ -69,7 +69,6 @@ GetCredentialConnectionString = () as record =>
 // Transforms the columns that the driver specifies as SQL_UNKNOWN_TYPE from binary to text values
 shared TransformSqlUnknownColumns = (table) => 
     let
-        TableType = Value.Type(table),
         Schema = Table.Schema(table),                        
         SqlBinaryTypes = Table.ToRecords(Table.SelectRows(Schema,  each [TypeName] = "Binary.Type" and [NativeTypeName] <> "binData")),
         TransformOperations = List.Accumulate(SqlBinaryTypes, table, (state, column) =>
