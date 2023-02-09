@@ -42,7 +42,6 @@ MongoDBAtlasODBCImpl = (mongodbUri as text, database as text, optional query as 
                 Odbc.Query(ConnectionString, query, [CredentialConnectionString = CredentialConnectionString])
             else
                 Odbc.DataSource(ConnectionString, Config & [CredentialConnectionString = CredentialConnectionString]),
-        Metadata = Value.Metadata(Value.Type(DataSource)),
         TransformColumns =
             let
                 TransformColumns =
@@ -55,8 +54,7 @@ MongoDBAtlasODBCImpl = (mongodbUri as text, database as text, optional query as 
                             (tables) => TransformColumnKeepType(tables, "Data", TransformSqlUnknownColumns)
                         )
             in
-                TransformColumns,
-        WithMetadata = Value.ReplaceType(TransformColumns, Value.ReplaceMetadata(Value.Type(DataSource), Metadata))
+                TransformColumns
     in
         TransformColumns;
 
@@ -94,11 +92,9 @@ shared TransformSqlUnknownColumns = (table) =>
 // Executes operation on specified columnName of the passed in table
 shared TransformColumnKeepType = (table, columnName, operation) =>
     let
-        TableType = Value.Type(table),
-        TransformColumn = Table.TransformColumns(table, {columnName, operation}),
-        ReplaceType = Value.ReplaceType(TransformColumn, TableType)
+        TableType = Value.Type(table), TransformColumn = Table.TransformColumns(table, {columnName, operation})
     in
-        ReplaceType;
+        Value.ReplaceType(TransformColumn, TableType);
 
 shared GetConnectionString = (uri as text, database as text) as record =>
     let
