@@ -1,0 +1,17 @@
+[
+  {
+    "name" : "supplies",
+    "collections" : [
+      {
+        "name": "*",
+        "dataSources" : [
+          {
+            "storeName" : "localmongo",
+            "database" : "supplies"
+          }
+        ]
+      }
+    ],
+    "views" : null
+  }
+]
