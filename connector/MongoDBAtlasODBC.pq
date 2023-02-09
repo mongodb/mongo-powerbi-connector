@@ -58,7 +58,7 @@ MongoDBAtlasODBCImpl = (mongodbUri as text, database as text, optional query as 
                 TransformColumns,
         WithMetadata = Value.ReplaceType(TransformColumns, Value.ReplaceMetadata(Value.Type(DataSource), Metadata))
     in
-        Table.ChangeType(TransformColumns, Value.Type(TransformColumns));
+        TransformColumns;
 
 GetCredentialConnectionString = () as record =>
     let
@@ -192,11 +192,3 @@ BuildOdbcConfig = () as record =>
         ]
     in
         Config;
-
-Extension.LoadFunction = (name as text) =>
-    let
-        binary = Extension.Contents(name), asText = Text.FromBinary(binary)
-    in
-        Expression.Evaluate(asText, #shared);
-
-Table.ChangeType = Extension.LoadFunction("Table.ChangeType.pqm");
