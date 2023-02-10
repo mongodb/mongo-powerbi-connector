@@ -80,9 +80,13 @@ shared TransformSqlUnknownColumns = (table) =>
             table,
             (state, column) =>
                 let
-                    TransformColumn = Table.TransformColumns(
-                        state, {column[Name], Text.FromBinary, type text}, null, MissingField.UseNull
-                    )
+                    ColumnType = Type.TableColumn(Value.Type(table), column[Name]),
+                    PreservedFacetFields = {"NativeTypeName", "NativeDefaultExpression", "NativeExpression"},
+                    Facets = Record.SelectFields(Type.Facets(ColumnType), PreservedFacetFields),
+                    ComplexType = column[NativeTypeName],
+                    TypeWithFacets = Type.ReplaceFacets(type nullable text, Facets),
+                    ToNullableText = (value) => if value = null then null else Text.FromBinary(value),
+                    TransformColumn = Table.TransformColumns(state, {column[Name], ToNullableText, TypeWithFacets})
                 in
                     TransformColumn
         )
