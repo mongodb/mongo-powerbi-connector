@@ -222,7 +222,7 @@ functions:
         permissions: public-read
         content_type: application/octet-stream
 
-  "upload integration-test logs":
+  "upload integration test logs":
     - command: s3.put
       params:
         aws_key: ${aws_key}
@@ -233,7 +233,7 @@ functions:
         permissions: public-read
         content_type: application/octet-stream
 
-  "upload unit-test logs":
+  "upload unit test logs":
     - command: s3.put
       params:
         aws_key: ${aws_key}
