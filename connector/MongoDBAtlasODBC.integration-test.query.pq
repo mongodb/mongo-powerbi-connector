@@ -401,3 +401,4 @@ section MongoDBAtlasODBCIntegrationTests;
           "[#_unable_to_serialize_#]"
     in
       try Serialize(value) otherwise "<serialization failed>";
+
