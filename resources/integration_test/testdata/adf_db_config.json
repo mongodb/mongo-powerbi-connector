@@ -13,5 +13,20 @@
       }
     ],
     "views" : null
+  },
+  {
+    "name" : "integration_test",
+    "collections" : [
+      {
+        "name": "*",
+        "dataSources" : [
+          {
+            "storeName" : "localmongo",
+            "database" : "integration_test"
+          }
+        ]
+      }
+    ],
+    "views" : null
   }
 ]

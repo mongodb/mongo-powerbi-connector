@@ -111,6 +111,56 @@ functions:
           unzip -n tools.zip
           chmod -R +x tools/*
 
+  "run integration test":
+    - command: shell.exec
+      params:
+        add_expansions_to_env: true
+        shell: bash
+        working_dir: mongo-powerbi-connector
+        script: |
+          ${prepare_shell}
+          set +e
+          
+          # Start local ADF
+          ./resources/run_adf.sh start &&
+          
+          # Import dataset to MongoDB 
+          ./mongoimport.exe --uri="mongodb://$ADF_TEST_LOCAL_HOST:$MDB_TEST_LOCAL_PORT/supplies" \
+            --drop resources/integration_test/testdata/sales.json &&
+          ./mongoimport.exe --uri="mongodb://$ADF_TEST_LOCAL_HOST:$MDB_TEST_LOCAL_PORT/integration_test" \
+            --drop resources/integration_test/testdata/complex_types.json &&
+          
+          
+          MONGOSHELL=$(find ./local_adf/ | grep mongo.exe | head -1) &&
+          chmod +x $MONGOSHELL &&
+          
+          # Generate schema on imported data
+          $MONGOSHELL -u $ADF_TEST_LOCAL_USER --password $ADF_TEST_LOCAL_PWD --authenticationDatabase \
+            $ADF_TEST_LOCAL_AUTH_DB $ADF_TEST_LOCAL_HOST/admin \
+            --eval 'db.runCommand({sqlGenerateSchema: 1, 
+            sampleNamespaces: ["integration_test.complex_types", "supplies.sales"], setSchemas: true})' &&
+
+          # Set credentials for the queryFile
+          echo $(eval echo $(cat resources/credentials.js )) | PQTest.exe set-credential \
+            --extension connector/bin/AnyCPU/Debug/connector.mez \
+            --queryFile connector/MongoDBAtlasODBC.integration-test.query.pq &&
+          
+          # Run Integration Test
+          test_output=`tools/PQTest.exe run-test --extension MongoDBAtlasODBC.pqx \
+            --queryFile connector/MongoDBAtlasODBC.unit-test.query.pq`
+          EXITCODE=$?
+          failures=`echo $test_output  | grep -Eo '"Result"[^}]*' | grep Failure || true` 
+          echo $test_output > MongoDBAtlasODBC.unit-test.log 
+          if [[ ! -z $failures ]]; then 
+            echo "Failures Encountered:"
+            echo $failures
+            exit 1
+          fi
+          
+          # Stop local ADF, always run this to keep task from hanging
+          ./resources/run_adf.sh stop
+          exit $EXITCODE
+
   "run unit-test":
     - command: shell.exec
       params:
@@ -118,8 +168,8 @@ functions:
         working_dir: mongo-powerbi-connector
         script: |
           ${prepare_shell}
-          # Credential setting to be done with SQL-1124
-          test_output=`tools/PQTest.exe run-test --extension MongoDBAtlasODBC.pqx --queryFile connector/MongoDBAtlasODBC.query.pq`
+          test_output=`tools/PQTest.exe run-test --extension MongoDBAtlasODBC.pqx \
+          --queryFile connector/MongoDBAtlasODBC.unit-test.query.pq` 
           failures=`echo $test_output  | grep -Eo '"Result"[^}]*' | grep Failure || true` 
           echo $test_output > MongoDBAtlasODBC.unit-test.log 
           if [[ ! -z $failures ]]; then 
@@ -137,41 +187,6 @@ functions:
           ${prepare_shell}
           # SQL-1128: Implement signing for connector pqx file
           cp MongoDBAtlasODBC.pqx MongoDBAtlasODBC-signed.pqx
-
-  "run integration test":
-    - command: shell.exec
-      params:
-        add_expansions_to_env: true
-        shell: bash
-        working_dir: mongo-powerbi-connector
-        script: |
-          ${prepare_shell}
-          set +e
-          
-          # Start local ADF
-          ./resources/run_adf.sh start &&
-          
-          # Import dataset to MongoDB 
-          ./mongoimport.exe --uri="mongodb://$ADF_TEST_LOCAL_HOST:$MDB_TEST_LOCAL_PORT/supplies" \
-            --drop resources/integration_test/testdata/sales.json &&
-          
-          MONGOSHELL=$(find ./local_adf/ | grep mongo.exe | head -1) &&
-          chmod +x $MONGOSHELL &&
-          
-          # Generate schema on imported data
-          $MONGOSHELL -u $ADF_TEST_LOCAL_USER --password $ADF_TEST_LOCAL_PWD --authenticationDatabase \
-            $ADF_TEST_LOCAL_AUTH_DB $ADF_TEST_LOCAL_HOST/admin \
-            --eval 'db.runCommand({sqlGenerateSchema: 1, sampleNamespaces: ["supplies.sales"], setSchemas: true})' &&
-
-          # SQL-1126: Integration testing
-          # Example command, get collections in supplies
-          $MONGOSHELL -u $ADF_TEST_LOCAL_USER --password $ADF_TEST_LOCAL_PWD --authenticationDatabase \
-            $ADF_TEST_LOCAL_AUTH_DB $ADF_TEST_LOCAL_HOST/supplies  --eval 'db.getCollectionNames()'
-          EXITCODE=$?
-          
-          # Stop local ADF, always run this to keep task from hanging
-          ./resources/run_adf.sh stop
-          exit $EXITCODE
 
   "upload packaged connector":
     - command: s3.put
