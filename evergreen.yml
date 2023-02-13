@@ -147,10 +147,10 @@ functions:
           
           # Run Integration Test
           test_output=`tools/PQTest.exe run-test --extension MongoDBAtlasODBC.pqx \
-            --queryFile connector/MongoDBAtlasODBC.unit-test.query.pq`
+            --queryFile connector/MongoDBAtlasODBC.integration-test.query.pq`
           EXITCODE=$?
           failures=`echo $test_output  | grep -Eo '"Result"[^}]*' | grep Failure || true` 
-          echo $test_output > MongoDBAtlasODBC.unit-test.log 
+          echo $test_output > MongoDBAtlasODBC.integration-test.log 
           if [[ ! -z $failures ]]; then 
             echo "Failures Encountered:"
             echo $failures
@@ -222,6 +222,17 @@ functions:
         permissions: public-read
         content_type: application/octet-stream
 
+  "upload integration-test logs":
+    - command: s3.put
+      params:
+        aws_key: ${aws_key}
+        aws_secret: ${aws_secret}
+        local_file: mongo-powerbi-connector/MongoDBAtlasODBC.integration-test.log
+        remote_file: mongo-powerbi-connector/artifacts/${version_id}/${build_variant}/MongoDBAtlasODBC.integration-test.log
+        bucket: mciuploads
+        permissions: public-read
+        content_type: application/octet-stream
+
   "upload unit-test logs":
     - command: s3.put
       params:
@@ -238,7 +249,8 @@ pre:
   - func: "generate expansions"
   - func: "install power query tools"
 post: 
-  - func: "upload unit-test logs"
+  - func: "upload unit test logs"
+  - func: "upload integration test logs"
 
 tasks:
   - name: build
