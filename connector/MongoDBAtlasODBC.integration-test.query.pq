@@ -3,7 +3,7 @@ section MongoDBAtlasODBCIntegrationTests;
     uri = "mongodb://localhost/?ssl=false", 
     Source_Supplies = MongoDBAtlasODBC.Contents(uri, "supplies", null, []), 
     // Sort the sales table, and retain first row
-    Table_List_Sales = Table.FirstN(
+    DataSource_Sales = Table.FirstN(
       Table.Sort(
         Source_Supplies
           {[Name = "supplies", Kind = "Database"]}
@@ -15,7 +15,7 @@ section MongoDBAtlasODBCIntegrationTests;
       1
     ), 
     Source_Integration_Test = MongoDBAtlasODBC.Contents(uri, "integration_test", null, []), 
-    Table_List_Complex_Types = Source_Integration_Test
+    DataSource_Complex_Types = Source_Integration_Test
       {[Name = "integration_test", Kind = "Database"]}
       [Data]
       {[Name = "complex_types", Kind = "Table"]}
@@ -95,12 +95,12 @@ section MongoDBAtlasODBCIntegrationTests;
       Fact(
         "Verify values in sales collection from navigation table", 
         Sales_Row, 
-        Table.ToRecords(Table_List_Sales)
+        Table.ToRecords(DataSource_Sales)
       ), 
       Fact(
         "Verify values in complex_types collection from navigation table", 
         Complex_Types_Row, 
-        Table.ToRecords(Table_List_Complex_Types)
+        Table.ToRecords(DataSource_Complex_Types)
       ), 
       Fact(
         "Query matching database name works with unqualified collection name", 
@@ -117,11 +117,11 @@ section MongoDBAtlasODBCIntegrationTests;
         [items = {"Text.Type"}, customer = {"Text.Type"}], 
         [
           items = Table.SelectRows(
-            Table.Schema(Table_List_Sales), 
+            Table.Schema(DataSource_Sales), 
             each Text.Contains([Name], "items")
           )[TypeName], 
           customer = Table.SelectRows(
-            Table.Schema(Table_List_Sales), 
+            Table.Schema(DataSource_Sales), 
             each Text.Contains([Name], "customer")
           )[TypeName]
         ]
@@ -152,7 +152,7 @@ section MongoDBAtlasODBCIntegrationTests;
       Fact(
         "NativeTypeName facet is retained in complex types from navigation table", 
         Complex_Types_NativeTypeNames, 
-        Table.Schema(Table_List_Complex_Types)[NativeTypeName]
+        Table.Schema(DataSource_Complex_Types)[NativeTypeName]
       )
     }, 
     report = Facts.Summarize(facts)
