@@ -142,7 +142,7 @@ functions:
 
           # Set credentials for the queryFile
           echo $(eval echo $(cat resources/credentials.js )) | PQTest.exe set-credential \
-            --extension connector/bin/AnyCPU/Debug/connector.mez \
+            --extension MongoDBAtlasODBC.pqx \
             --queryFile connector/MongoDBAtlasODBC.integration-test.query.pq &&
           
           # Run Integration Test
