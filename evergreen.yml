@@ -141,7 +141,7 @@ functions:
             sampleNamespaces: ["integration_test.complex_types", "supplies.sales"], setSchemas: true})' &&
 
           # Set credentials for the queryFile
-          echo $(eval echo $(cat resources/credentials.js )) | PQTest.exe set-credential \
+          echo $(eval echo $(cat resources/credentials.js )) | tools/PQTest.exe set-credential \
             --extension MongoDBAtlasODBC.pqx \
             --queryFile connector/MongoDBAtlasODBC.integration-test.query.pq &&
           
