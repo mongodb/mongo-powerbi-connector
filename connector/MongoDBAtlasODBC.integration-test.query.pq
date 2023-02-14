@@ -1,11 +1,11 @@
 section MongoDBAtlasODBCIntegrationTests;
   shared IntegrationTests = [
     uri = "mongodb://localhost/?ssl=false", 
-    Source_Supplies = MongoDBAtlasODBC.Contents(uri, "supplies", null, []), 
+    DataSource = MongoDBAtlasODBC.Contents(uri, "supplies", null, []),
     // Sort the sales table, and retain first row
     DataSource_Sales = Table.FirstN(
       Table.Sort(
-        Source_Supplies
+        DataSource
           {[Name = "supplies", Kind = "Database"]}
           [Data]
           {[Name = "sales", Kind = "Table"]}
@@ -14,8 +14,7 @@ section MongoDBAtlasODBCIntegrationTests;
       ), 
       1
     ), 
-    Source_Integration_Test = MongoDBAtlasODBC.Contents(uri, "integration_test", null, []), 
-    DataSource_Complex_Types = Source_Integration_Test
+    DataSource_Complex_Types = DataSource
       {[Name = "integration_test", Kind = "Database"]}
       [Data]
       {[Name = "complex_types", Kind = "Table"]}

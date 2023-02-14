@@ -54,7 +54,7 @@ functions:
         local_file: mongo-powerbi-connector/MongoDBAtlasODBC-signed.pqx
         bucket: mciuploads
 
-  "fetch source":
+  "fetch powerbi source":
     - command: git.get_project
       params:
         directory: mongo-powerbi-connector
@@ -65,6 +65,10 @@ functions:
         shell: bash
         working_dir: mongo-powerbi-connector
         script: |
+          export CARGO_NET_GIT_FETCH_WITH_CLI=true
+          export UNIX_ODBC_PATH="$PWD/unixodbc/install"
+          export LD_LIBRARY_PATH="$UNIX_ODBC_PATH/lib"
+          export PATH="$LD_LIBRARY_PATH:$PATH:$HOME/.cargo/bin"
           export MONGO_POWERBI_CONNECTOR_VERSION=$(git describe --always | sed 's/^v//g')
           export UPDATE_PLUGIN_VERSION=true
           git describe --exact-match HEAD || UPDATE_PLUGIN_VERSION=false
@@ -82,6 +86,8 @@ functions:
             export ADF_TEST_LOCAL_AUTH_DB="${adf_test_local_auth_db}"
             export ADF_TEST_LOCAL_HOST="${adf_test_local_host}"
             export MDB_TEST_LOCAL_PORT="${mdb_test_local_port}"
+            export PATH="$PATH"
+            export CARGO_NET_GIT_FETCH_WITH_CLI="$CARGO_NET_GIT_FETCH_WITH_CLI"
           EOT
     - command: expansions.update
       params:
@@ -111,6 +117,41 @@ functions:
           unzip -n tools.zip
           chmod -R +x tools/*
 
+  "install rust toolchain":
+    - command: shell.exec
+      params:
+        shell: bash
+        script: |
+          ${prepare_shell}
+          # make sure to use msvc toolchain rather than gnu, which is
+          # the default for cygwin
+          if [ "Windows_NT" == "$OS" ]; then
+              if [ 'windows-64' == '${build_variant}' ]; then
+                  export HOST="x86_64-pc-windows-msvc"
+              else
+                  echo 'unknown windows build variant ${build_variant}'
+                  exit 1;
+              fi
+              export DEFAULT_HOST_OPTIONS="--default-host $HOST"
+              export DEFAULT_TOOLCHAIN="stable-$HOST"
+          fi
+          # install rustup from scratch
+          rm -rf ~/.rustup
+          curl https://sh.rustup.rs -sSf | sh -s -- -y --no-modify-path $DEFAULT_HOST_OPTIONS
+          # rustup installs into C:\Users\$USER instead of
+          # C:\home\$USER, so we symlink both .rustup and .cargo
+          if [ "Windows_NT" == "$OS" ]; then
+              ln -sf /cygdrive/c/Users/$USER/.rustup/ ~/.rustup
+              ln -sf /cygdrive/c/Users/$USER/.cargo/ ~/.cargo
+              rustup toolchain install $DEFAULT_TOOLCHAIN
+              rustup default $DEFAULT_TOOLCHAIN
+          fi
+          echo --------- rustup show -----------
+          rustup show
+          echo ----- Rustup toolchain list -----
+          rustup toolchain list
+          echo ---------------------------------
+
   "run integration test":
     - command: shell.exec
       params:
@@ -120,7 +161,7 @@ functions:
         script: |
           ${prepare_shell}
           set +e
-          
+
           # Start local ADF
           ./resources/run_adf.sh start &&
           
@@ -141,7 +182,7 @@ functions:
             sampleNamespaces: ["integration_test.complex_types", "supplies.sales"], setSchemas: true})' &&
 
           # Set credentials for the queryFile
-          echo $(eval echo $(cat resources/credentials.js )) | tools/PQTest.exe set-credential \
+          echo $(eval echo $(cat resources/credentials.json )) | tools/PQTest.exe set-credential \
             --extension MongoDBAtlasODBC.pqx \
             --queryFile connector/MongoDBAtlasODBC.integration-test.query.pq &&
           
@@ -177,6 +218,42 @@ functions:
             echo $failures
             exit 1
           fi
+
+  "setup driver on Windows":
+    - command: shell.exec
+      params:
+        shell: bash
+        working_dir: mongo-powerbi-connector
+        script: |
+          ${prepare_shell}
+          git clone git@github.com:mongodb/mongo-odbc-driver.git
+          cd mongo-odbc-driver
+          cargo build --release
+          cp target/release/mongoodbc.dll ./mongoodbc.dll
+          sed -i 's@%DRIVER_DLL_PATH%@'"$(echo "$(cygpath -w $(pwd))" | sed s',\\,\\\\\\\\,g')"'@' setup/setupDSN.reg
+          reg import "setup\setupDSN.reg"
+          echo "----- Registry entries after setup ----"
+          reg query "HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\ODBC\ODBCINST.INI\ODBC Drivers" -s 2> /dev/null || true
+          reg query "HKEY_LOCAL_MACHINE\SOFTWARE\ODBC\ODBCINST.INI\ODBC Drivers" -s 2> /dev/null || true
+          reg query "HKEY_LOCAL_MACHINE\SOFTWARE\ODBC\ODBCINST.INI\ADF_ODBC_DRIVER" -s 2>/dev/null || true
+          reg query "HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\ODBC\ODBCINST.INI\ADF_ODBC_DRIVER" -s 2> /dev/null || true
+          echo "-------------------------"
+
+  "clean up driver on Windows":
+    - command: shell.exec
+      params:
+        shell: bash
+        working_dir: mongo-powerbi-connector
+        script:  |
+          ${prepare_shell}
+          cd mongo-odbc-driver
+          reg import "setup\cleanup_driver.reg"
+          echo "----- Registry entries after clean-up----"
+          reg query "HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\ODBC\ODBCINST.INI\ODBC Drivers" -s 2> /dev/null || true
+          reg query "HKEY_LOCAL_MACHINE\SOFTWARE\ODBC\ODBCINST.INI\ODBC Drivers" -s 2> /dev/null || true
+          reg query "HKEY_LOCAL_MACHINE\SOFTWARE\ODBC\ODBCINST.INI\ADF_ODBC_DRIVER" -s 2>/dev/null || true
+          reg query "HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\ODBC\ODBCINST.INI\ADF_ODBC_DRIVER" -s 2> /dev/null || true
+          echo "-------------------------"
 
   "sign connector":
     - command: shell.exec
@@ -245,7 +322,7 @@ functions:
         content_type: application/octet-stream
 
 pre:
-  - func: "fetch source"
+  - func: "fetch powerbi source"
   - func: "generate expansions"
   - func: "install power query tools"
 post: 
@@ -262,9 +339,12 @@ tasks:
     depends_on:
       - name: build
     commands:
+      - func: "install rust toolchain"
+      - func: "setup driver on Windows"
       - func: "fetch packaged connector"
       - func: "install mongoimport tool"
       - func: "run integration test"
+      - func: "clean up driver on Windows"
 
   - name: unit-test
     depends_on:
@@ -291,7 +371,7 @@ tasks:
       - func: "upload release"
 
 buildvariants:
-  - name: windows
+  - name: windows-64
     display_name: "Windows"
     run_on: [ windows-64-vs2019-large ]
     tasks:
