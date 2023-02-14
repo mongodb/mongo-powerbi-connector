@@ -73,13 +73,13 @@ Wait for the evergreen version to finish, and ensure that the release task compl
 
 Check that the released file is available at the URL:
 - Windows
-`https://translators-connectors-releases.s3.us-east-1.amazonaws.com/mongosql-odbc-driver/windows/${release_version}/mongoodbc.dll`
+`https://translators-connectors-releases.s3.us-east-1.amazonaws.com/mongo-powerbi-connector/windows/${release_version}/mongoodbc.dll`
 
 #### Verify that the connector works with PowerBI
 
 Download and install the connector file.
 
-Verify that it is able to connect to Atlas Data Lake, extract data,
+Verify that it is able to connect to Atlas Data Federation, extract data,
 and add columns to the worksheet.
 
 #### Close Release Ticket

@@ -30,7 +30,7 @@ functions:
         script: |
           ${prepare_shell}
           if $UPDATE_PLUGIN_VERSION; then
-            sed -i "s/\[Version = \"0.0.0\"\]/\[Version = \"${release_version}\"\]/g" \
+            sed -i "s/\[Version = \"0.0.0\"\]/\[Version = \"${RELEASE_VERSION}\"\]/g" \
               connector/MongoDBAtlasODBC.pq
           fi
           tools/MakePQX.exe compile connector/
@@ -65,23 +65,23 @@ functions:
         shell: bash
         working_dir: mongo-powerbi-connector
         script: |
-          export UPDATE_PLUGIN_VERSION=true
-          git describe --exact-match HEAD || UPDATE_PLUGIN_VERSION=false
 
           if [[ "${triggered_by_git_tag}" != "" ]]; then
-            export release_version=$(echo ${triggered_by_git_tag} | sed s/v//)
+            export RELEASE_VERSION=$(echo ${triggered_by_git_tag} | sed s/v//)
+            export UPDATE_PLUGIN_VERSION=true
           else
-            export release_version=test_release
+            export UPDATE_PLUGIN_VERSION=false
+            export RELEASE_VERSION=test_release
           fi
 
 
           cat <<EOT > expansions.yml
-          release_version: "$release_version"
+          RELEASE_VERSION: "$RELEASE_VERSION"
           UPDATE_PLUGIN_VERSION: "$UPDATE_PLUGIN_VERSION"
           prepare_shell: |
             set -o errexit
             export PATH="$PATH"
-            export release_version="$release_version"
+            export RELEASE_VERSION="$RELEASE_VERSION"
             export UPDATE_PLUGIN_VERSION="$UPDATE_PLUGIN_VERSION"
             export ADF_TEST_LOCAL_USER="${adf_test_local_user}"
             export ADF_TEST_LOCAL_PWD="${adf_test_local_pwd}"
@@ -196,10 +196,10 @@ functions:
         aws_key: ${release_aws_key}
         aws_secret: ${release_aws_secret}
         local_file: mongo-powerbi-connector/MongoDBAtlasODBC-signed.pqx
-        remote_file: mongo-powerbi-connector/MongoDBAtlasODBC-${release_version}.pqx
+        remote_file: mongo-powerbi-connector/MongoDBAtlasODBC-${RELEASE_VERSION}.pqx
         bucket: translators-connectors-releases
         permissions: public-read
-        display_name: MongoDBAtlasODBC-${release_version}.pqx
+        display_name: MongoDBAtlasODBC-${RELEASE_VERSION}.pqx
         content_type: application/octet-stream
 
   "upload signed connector":
