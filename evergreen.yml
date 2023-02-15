@@ -30,7 +30,7 @@ functions:
         script: |
           ${prepare_shell}
           if $UPDATE_PLUGIN_VERSION; then
-            sed -i "s/\[Version = \"0.0.0\"\]/\[Version = \"${MONGO_POWERBI_CONNECTOR_VERSION}\"\]/g" \
+            sed -i "s/\[Version = \"0.0.0\"\]/\[Version = \"${RELEASE_VERSION}\"\]/g" \
               connector/MongoDBAtlasODBC.pq
           fi
           tools/MakePQX.exe compile connector/
@@ -65,17 +65,23 @@ functions:
         shell: bash
         working_dir: mongo-powerbi-connector
         script: |
-          export MONGO_POWERBI_CONNECTOR_VERSION=$(git describe --always | sed 's/^v//g')
-          export UPDATE_PLUGIN_VERSION=true
-          git describe --exact-match HEAD || UPDATE_PLUGIN_VERSION=false
+
+          if [[ "${triggered_by_git_tag}" != "" ]]; then
+            export RELEASE_VERSION=$(echo ${triggered_by_git_tag} | sed s/v//)
+            export UPDATE_PLUGIN_VERSION=true
+          else
+            export UPDATE_PLUGIN_VERSION=false
+            export RELEASE_VERSION="0.0.0-$(git describe --always)"
+          fi
+
 
           cat <<EOT > expansions.yml
-          MONGO_POWERBI_CONNECTOR_VERSION: "$MONGO_POWERBI_CONNECTOR_VERSION"
+          RELEASE_VERSION: "$RELEASE_VERSION"
           UPDATE_PLUGIN_VERSION: "$UPDATE_PLUGIN_VERSION"
           prepare_shell: |
             set -o errexit
             export PATH="$PATH"
-            export MONGO_POWERBI_CONNECTOR_VERSION="$MONGO_POWERBI_CONNECTOR_VERSION"
+            export RELEASE_VERSION="$RELEASE_VERSION"
             export UPDATE_PLUGIN_VERSION="$UPDATE_PLUGIN_VERSION"
             export ADF_TEST_LOCAL_USER="${adf_test_local_user}"
             export ADF_TEST_LOCAL_PWD="${adf_test_local_pwd}"
@@ -120,9 +126,9 @@ functions:
           ${prepare_shell}
           # Credential setting to be done with SQL-1124
           test_output=`tools/PQTest.exe run-test --extension MongoDBAtlasODBC.pqx --queryFile connector/MongoDBAtlasODBC.query.pq`
-          failures=`echo $test_output  | grep -Eo '"Result"[^}]*' | grep Failure || true` 
-          echo $test_output > MongoDBAtlasODBC.unit-test.log 
-          if [[ ! -z $failures ]]; then 
+          failures=`echo $test_output  | grep -Eo '"Result"[^}]*' | grep Failure || true`
+          echo $test_output > MongoDBAtlasODBC.unit-test.log
+          if [[ ! -z $failures ]]; then
             echo "Failures Encountered:"
             echo $failures
             exit 1
@@ -133,7 +139,7 @@ functions:
       type: system
       params:
         working_dir: mongo-powerbi-connector
-        script: | 
+        script: |
           ${prepare_shell}
           # SQL-1128: Implement signing for connector pqx file
           cp MongoDBAtlasODBC.pqx MongoDBAtlasODBC-signed.pqx
@@ -147,17 +153,17 @@ functions:
         script: |
           ${prepare_shell}
           set +e
-          
+
           # Start local ADF
           ./resources/run_adf.sh start &&
-          
-          # Import dataset to MongoDB 
+
+          # Import dataset to MongoDB
           ./mongoimport.exe --uri="mongodb://$ADF_TEST_LOCAL_HOST:$MDB_TEST_LOCAL_PORT/supplies" \
             --drop resources/integration_test/testdata/sales.json &&
-          
+
           MONGOSHELL=$(find ./local_adf/ | grep mongo.exe | head -1) &&
           chmod +x $MONGOSHELL &&
-          
+
           # Generate schema on imported data
           $MONGOSHELL -u $ADF_TEST_LOCAL_USER --password $ADF_TEST_LOCAL_PWD --authenticationDatabase \
             $ADF_TEST_LOCAL_AUTH_DB $ADF_TEST_LOCAL_HOST/admin \
@@ -168,7 +174,7 @@ functions:
           $MONGOSHELL -u $ADF_TEST_LOCAL_USER --password $ADF_TEST_LOCAL_PWD --authenticationDatabase \
             $ADF_TEST_LOCAL_AUTH_DB $ADF_TEST_LOCAL_HOST/supplies  --eval 'db.getCollectionNames()'
           EXITCODE=$?
-          
+
           # Stop local ADF, always run this to keep task from hanging
           ./resources/run_adf.sh stop
           exit $EXITCODE
@@ -190,10 +196,10 @@ functions:
         aws_key: ${release_aws_key}
         aws_secret: ${release_aws_secret}
         local_file: mongo-powerbi-connector/MongoDBAtlasODBC-signed.pqx
-        remote_file: mongo-powerbi-connector/MongoDBAtlasODBC-${MONGO_POWERBI_CONNECTOR_VERSION}.pqx
+        remote_file: mongo-powerbi-connector/MongoDBAtlasODBC-${RELEASE_VERSION}.pqx
         bucket: translators-connectors-releases
         permissions: public-read
-        display_name: MongoDBAtlasODBC-${MONGO_POWERBI_CONNECTOR_VERSION}.pqx
+        display_name: MongoDBAtlasODBC-${RELEASE_VERSION}.pqx
         content_type: application/octet-stream
 
   "upload signed connector":
@@ -222,7 +228,7 @@ pre:
   - func: "fetch source"
   - func: "generate expansions"
   - func: "install power query tools"
-post: 
+post:
   - func: "upload unit-test logs"
 
 tasks:
@@ -263,6 +269,14 @@ tasks:
       - func: "fetch signed connector"
       - func: "upload release"
 
+  - name: test-release
+    patch_only: true
+    depends_on:
+     - name: sign
+    commands:
+      - func: "fetch signed connector"
+      - func: "upload release"
+
 buildvariants:
   - name: windows
     display_name: "Windows"
@@ -273,3 +287,4 @@ buildvariants:
       - name: integration-test
       - name: sign
       - name: release
+      - name: test-release
