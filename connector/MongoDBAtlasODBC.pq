@@ -145,10 +145,11 @@ shared OnError = (errorRecord as record) =>
                         & "Error message: " 
                         & MessageVal
         else if ReasonVal = DataSourceMissingClientLibrary then
-                    error Error.Record(
-                        DataSourceMissingClientLibrary, Text.Format(
-                        "Missing client library", { AtlasSQLLink }),
-                        AtlasSQLLink)
+                    error "Missing client library for datasource" 
+                      & Newline 
+                      & "Visit " 
+                      & Text.From(AtlasSQLLink)
+                      & " for more information."
         else if ReasonVal = "Extension.CredentialError" then
             error "Credential error occurred." & Newline & MessageVal
         else

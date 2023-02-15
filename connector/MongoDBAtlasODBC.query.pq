@@ -45,8 +45,8 @@ shared UnitTests =
             SQLState = {"0100"}]]])  catch (e)  => e[Message]
         ),
         Fact("OnError - Missing Client Library",
-          "Missing client library",
-          try OnError([Reason = "DataSource.MissingClientLibrary"])  catch (e)  => e[Message]
+          "Missing client library for datasource#(lf)Visit https://www.mongodb.com/atlas/sql for more information.",
+          try OnError([Reason = "DataSource.MissingClientLibrary", Message = "No Client Library"])  catch (e)  => e[Message]
         ),
         Fact("OnError - Credential Error",
           "Credential error occurred.#(lf)Bad Credentials",
