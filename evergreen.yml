@@ -71,7 +71,7 @@ functions:
             export UPDATE_PLUGIN_VERSION=true
           else
             export UPDATE_PLUGIN_VERSION=false
-            export RELEASE_VERSION="0.0.0-${$(git branch --show-current)}"
+            export RELEASE_VERSION="0.0.0-$(git describe --always)"
           fi
 
 
@@ -287,3 +287,4 @@ buildvariants:
       - name: integration-test
       - name: sign
       - name: release
+      - name: test-release
