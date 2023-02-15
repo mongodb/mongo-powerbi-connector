@@ -73,7 +73,7 @@ Wait for the evergreen version to finish, and ensure that the release task compl
 
 Check that the released file is available at the URL:
 - Windows
-`https://translators-connectors-releases.s3.us-east-1.amazonaws.com/mongo-powerbi-connector/windows/${release_version}/mongoodbc.dll`
+`https://translators-connectors-releases.s3.us-east-1.amazonaws.com/mongo-powerbi-connector/MongoDBAtlasODBC-${release_version}.pqx`
 
 #### Verify that the connector works with PowerBI
 
