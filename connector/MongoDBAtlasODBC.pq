@@ -1,6 +1,14 @@
 [Version = "0.0.0"]
 section MongoDBAtlasODBC;
 
+// When set to true, additional trace information will be written out to the User log. 
+// This should be set to false before release. Tracing is done through a call to 
+// Diagnostics.LogValue(). When EnableTraceOutput is set to false, the call becomes a 
+// no-op and simply returns the original value.
+EnableTraceOutput = true;
+
+AtlasSQLLink="https://www.mongodb.com/atlas/sql";
+
 [DataSource.Kind = "MongoDBAtlasODBC", Publish = "MongoDBAtlasODBC.Publish"]
 shared MongoDBAtlasODBC.Contents = Value.ReplaceType(MongoDBAtlasODBCImpl, MongoDBAtlasODBCType);
 
@@ -34,14 +42,14 @@ MongoDBAtlasODBCType = type function (
 
 MongoDBAtlasODBCImpl = (mongodbUri as text, database as text, optional query as text, optional options as record) as table =>
     let
-        ConnectionString = GetConnectionString(mongodbUri, database),
+        ConnectionString = Diagnostics.LogValue("ConnectionString", GetConnectionString(mongodbUri, database)),
         CredentialConnectionString = GetCredentialConnectionString(),
-        Config = BuildOdbcConfig(),
+        Config = Diagnostics.LogValue("BuildOdbcConfig", BuildOdbcConfig()),
         DataSource =
             if query <> null then
                 Odbc.Query(ConnectionString, query, [CredentialConnectionString = CredentialConnectionString])
             else
-                Odbc.DataSource(ConnectionString, Config & [CredentialConnectionString = CredentialConnectionString]),
+                Odbc.DataSource(ConnectionString, Config & [OnError = OnError, CredentialConnectionString = CredentialConnectionString]),
         TransformColumns =
             let
                 TransformColumns =
@@ -72,9 +80,9 @@ GetCredentialConnectionString = () as record =>
 shared TransformSqlUnknownColumns = (table) =>
     let
         Schema = Table.Schema(table),
-        SqlBinaryTypes = Table.ToRecords(
+        SqlBinaryTypes = Diagnostics.LogValue("TransformSqlUnknownColumns", Table.ToRecords(
             Table.SelectRows(Schema, each [TypeName] = "Binary.Type" and [NativeTypeName] <> "binData")
-        ),
+        )),
         TransformOperations = List.Accumulate(
             SqlBinaryTypes,
             table,
@@ -113,13 +121,49 @@ shared GetConnectionString = (uri as text, database as text) as record =>
         else
             ConnectionString;
 
+DataSourceMissingClientLibrary = "DataSource.MissingClientLibrary";
+shared OnError = (errorRecord as record) =>
+    let
+        ErrRecord = Diagnostics.LogValue("OnError Record", errorRecord),
+        Reason = ErrRecord[Reason]?,
+        ReasonVal = if Reason = null then "" else Reason,
+        Message = ErrRecord[Message]?,
+        MessageVal = if Message = null then "None" else Message,
+        Newline = Text.From(Character.FromNumber(10))
+    in
+        if ReasonVal = "DataSource.Error" then
+            let
+                SqlState = ErrRecord[Detail][OdbcErrors][SQLState]?,
+                SqlStateVal = if SqlState = null then "" else Text.Combine({"SQLSTATE: ", Lines.ToText(SqlState)}),
+                NativeError = ErrRecord[Detail][OdbcErrors][NativeError]?,
+                NativeErrorVal = if NativeError = null then "" else Text.Combine({"NativeError: ", Lines.ToText(List.Transform(NativeError, Text.From))})
+            in
+                error "Data source error occurred." 
+                        & Newline
+                        & SqlStateVal 
+                        & NativeErrorVal 
+                        & "Error message: " 
+                        & MessageVal
+        else if ReasonVal = DataSourceMissingClientLibrary then
+                    error Error.Record(
+                        DataSourceMissingClientLibrary, Text.Format(
+                        "Missing client library", { AtlasSQLLink }),
+                        AtlasSQLLink)
+        else if ReasonVal = "Extension.CredentialError" then
+            error "Credential error occurred." & Newline & MessageVal
+        else
+            error "An unknown error occurred. Error message:" & Newline & MessageVal;
+
 // Data Source Kind description
 MongoDBAtlasODBC = [
     // The TestConnection handler enables gateway support.
     // It will invoke the data source function to validate the credentials the user has provided.
     TestConnection = (dataSourcePath) =>
         let
-            json = Json.Document(dataSourcePath), mongodbUri = json[mongodbUri], database = json[database]
+            dataSourcePathVal = Diagnostics.LogValue("TestConnection dataSourcePath", dataSourcePath),
+            json = Json.Document(dataSourcePathVal), 
+            mongodbUri = json[mongodbUri], 
+            database = json[database]
         in
             {"MongoDBAtlasODBC.Contents", mongodbUri, database},
     Authentication = [
@@ -133,7 +177,7 @@ MongoDBAtlasODBC.Publish = [
     Beta = true,
     Category = "Database",
     ButtonText = {Extension.LoadString("ButtonTitle"), Extension.LoadString("ButtonHelp")},
-    LearnMoreUrl = "https://www.mongodb.com/atlas/sql",
+    LearnMoreUrl = AtlasSQLLink,
     SourceTypeImage = MongoDBAtlasODBC.Icons,
     // SQL-399: Add DirectQuery mode support
     SupportsDirectQuery = false
@@ -191,3 +235,17 @@ BuildOdbcConfig = () as record =>
         ]
     in
         Config;
+
+// 
+// Load common library functions
+// 
+Extension.LoadFunction = (name as text) =>
+    let
+        binary = Extension.Contents(name),
+        asText = Text.FromBinary(binary)
+    in
+        Expression.Evaluate(asText, #shared);
+
+// Diagnostics module contains multiple functions. We can take the ones we need.
+Diagnostics = Extension.LoadFunction("Diagnostics.pqm");
+Diagnostics.LogValue = if (EnableTraceOutput) then Diagnostics[LogValue] else (prefix, value) => value;
