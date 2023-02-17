@@ -121,7 +121,9 @@ shared GetConnectionString = (uri as text, database as text) as record =>
         else
             ConnectionString;
 
+DataSourceError = "DataSource.Error";
 DataSourceMissingClientLibrary = "DataSource.MissingClientLibrary";
+ExtensionCredentialError = "Extension.CredentialError";
 shared OnError = (errorRecord as record) =>
     let
         ErrRecord = Diagnostics.LogValue("OnError Record", errorRecord),
@@ -131,7 +133,7 @@ shared OnError = (errorRecord as record) =>
         MessageVal = if Message = null then "None" else Message,
         Newline = Text.From(Character.FromNumber(10))
     in
-        if ReasonVal = "DataSource.Error" then
+        if ReasonVal = DataSourceError then
             let
                 SqlState = ErrRecord[Detail][OdbcErrors][SQLState]?,
                 SqlStateVal = if SqlState = null then "" else Text.Combine({"SQLSTATE: ", Lines.ToText(SqlState)}),
@@ -150,7 +152,7 @@ shared OnError = (errorRecord as record) =>
                       & "Visit " 
                       & Text.From(AtlasSQLLink)
                       & " for more information."
-        else if ReasonVal = "Extension.CredentialError" then
+        else if ReasonVal = ExtensionCredentialError then
             error "Credential error occurred." & Newline & MessageVal
         else
             error "An unknown error occurred. Error message:" & Newline & MessageVal;
