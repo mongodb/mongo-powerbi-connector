@@ -6,3 +6,5 @@ tmp/
 tools/
 *.pqx
 *.mez
+local_adf/
+nohup.out
