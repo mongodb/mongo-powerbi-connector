@@ -54,7 +54,7 @@ functions:
         local_file: mongo-powerbi-connector/MongoDBAtlasODBC-signed.pqx
         bucket: mciuploads
 
-  "fetch source":
+  "fetch powerbi source":
     - command: git.get_project
       params:
         directory: mongo-powerbi-connector
@@ -73,7 +73,6 @@ functions:
             export UPDATE_PLUGIN_VERSION=false
             export RELEASE_VERSION="0.0.0-$(git describe --always)"
           fi
-
 
           cat <<EOT > expansions.yml
           RELEASE_VERSION: "$RELEASE_VERSION"
@@ -117,35 +116,9 @@ functions:
           unzip -n tools.zip
           chmod -R +x tools/*
 
-  "run unit-test":
-    - command: shell.exec
-      params:
-        shell: bash
-        working_dir: mongo-powerbi-connector
-        script: |
-          ${prepare_shell}
-          # Credential setting to be done with SQL-1124
-          test_output=`tools/PQTest.exe run-test --extension MongoDBAtlasODBC.pqx --queryFile connector/MongoDBAtlasODBC.query.pq`
-          failures=`echo $test_output  | grep -Eo '"Result"[^}]*' | grep Failure || true`
-          echo $test_output > MongoDBAtlasODBC.unit-test.log
-          if [[ ! -z $failures ]]; then
-            echo "Failures Encountered:"
-            echo $failures
-            exit 1
-          fi
-
-  "sign connector":
-    - command: shell.exec
-      type: system
-      params:
-        working_dir: mongo-powerbi-connector
-        script: |
-          ${prepare_shell}
-          # SQL-1128: Implement signing for connector pqx file
-          cp MongoDBAtlasODBC.pqx MongoDBAtlasODBC-signed.pqx
-
   "run integration test":
     - command: shell.exec
+      type: test
       params:
         add_expansions_to_env: true
         shell: bash
@@ -160,24 +133,104 @@ functions:
           # Import dataset to MongoDB
           ./mongoimport.exe --uri="mongodb://$ADF_TEST_LOCAL_HOST:$MDB_TEST_LOCAL_PORT/supplies" \
             --drop resources/integration_test/testdata/sales.json &&
-
+          ./mongoimport.exe --uri="mongodb://$ADF_TEST_LOCAL_HOST:$MDB_TEST_LOCAL_PORT/integration_test" \
+            --drop resources/integration_test/testdata/complex_types.json &&
+          
+          
           MONGOSHELL=$(find ./local_adf/ | grep mongo.exe | head -1) &&
           chmod +x $MONGOSHELL &&
 
           # Generate schema on imported data
           $MONGOSHELL -u $ADF_TEST_LOCAL_USER --password $ADF_TEST_LOCAL_PWD --authenticationDatabase \
             $ADF_TEST_LOCAL_AUTH_DB $ADF_TEST_LOCAL_HOST/admin \
-            --eval 'db.runCommand({sqlGenerateSchema: 1, sampleNamespaces: ["supplies.sales"], setSchemas: true})' &&
+            --eval 'db.runCommand({sqlGenerateSchema: 1, 
+            sampleNamespaces: ["integration_test.complex_types", "supplies.sales"], setSchemas: true})' &&
 
-          # SQL-1126: Integration testing
-          # Example command, get collections in supplies
-          $MONGOSHELL -u $ADF_TEST_LOCAL_USER --password $ADF_TEST_LOCAL_PWD --authenticationDatabase \
-            $ADF_TEST_LOCAL_AUTH_DB $ADF_TEST_LOCAL_HOST/supplies  --eval 'db.getCollectionNames()'
+          # Set credentials for the queryFile
+          echo $(eval echo $(cat resources/credentials.json )) | tools/PQTest.exe set-credential \
+            --extension MongoDBAtlasODBC.pqx \
+            --queryFile connector/MongoDBAtlasODBC.integration-test.query.pq &&
+          
+          # Run Integration Test
+          test_output=`tools/PQTest.exe run-test --extension MongoDBAtlasODBC.pqx \
+            --queryFile connector/MongoDBAtlasODBC.integration-test.query.pq --prettyPrint`
           EXITCODE=$?
-
+          echo "$test_output"
+          failures=`echo "$test_output"  | grep Failure -A 1 || true` 
+          echo $test_output > MongoDBAtlasODBC.integration-test.log 
+          if [[ ! -z $failures ]]; then 
+            echo "Failures Encountered:"
+            echo $failures
+            if [ "$EXITCODE" -eq "0" ]; then
+              EXITCODE=1
+            fi
+          fi
+          
           # Stop local ADF, always run this to keep task from hanging
           ./resources/run_adf.sh stop
           exit $EXITCODE
+
+  "run unit-test":
+    - command: shell.exec
+      type: test
+      params:
+        shell: bash
+        working_dir: mongo-powerbi-connector
+        script: |
+          ${prepare_shell}
+          test_output=`tools/PQTest.exe run-test --extension MongoDBAtlasODBC.pqx \
+          --queryFile connector/MongoDBAtlasODBC.unit-test.query.pq --prettyPrint` 
+          echo "$test_output"
+          failures=`echo "$test_output"  | grep Failure -A 1 || true` 
+          echo $test_output > MongoDBAtlasODBC.unit-test.log 
+          if [[ ! -z $failures ]]; then 
+            echo "Failures Encountered:"
+            echo $failures
+            exit 1
+          fi
+
+  "setup ODBC driver on Windows":
+    - command: shell.exec
+      params:
+        shell: bash
+        working_dir: mongo-powerbi-connector
+        script: |
+          ${prepare_shell}
+          curl -O https://translators-connectors-releases.s3.us-east-1.amazonaws.com/mongosql-odbc-driver/windows/snapshot/mongoodbc.dll
+          chmod 777 ./mongoodbc.dll
+          sed -i 's@%DRIVER_DLL_PATH%@'"$(echo "$(cygpath -w $(pwd))" | sed s',\\,\\\\\\\\,g')"'@' resources/odbc/setupDSN.reg
+          reg import "resources\odbc\setupDSN.reg"
+          echo "----- Registry entries after setup ----"
+          reg query "HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\ODBC\ODBCINST.INI\ODBC Drivers" -s 2> /dev/null || true
+          reg query "HKEY_LOCAL_MACHINE\SOFTWARE\ODBC\ODBCINST.INI\ODBC Drivers" -s 2> /dev/null || true
+          reg query "HKEY_LOCAL_MACHINE\SOFTWARE\ODBC\ODBCINST.INI\ADF_ODBC_DRIVER" -s 2>/dev/null || true
+          reg query "HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\ODBC\ODBCINST.INI\ADF_ODBC_DRIVER" -s 2> /dev/null || true
+          echo "-------------------------"
+
+  "clean up ODBC driver on Windows":
+    - command: shell.exec
+      params:
+        shell: bash
+        working_dir: mongo-powerbi-connector
+        script:  |
+          ${prepare_shell}
+          reg import "resources\odbc\cleanup_driver.reg"
+          echo "----- Registry entries after clean-up----"
+          reg query "HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\ODBC\ODBCINST.INI\ODBC Drivers" -s 2> /dev/null || true
+          reg query "HKEY_LOCAL_MACHINE\SOFTWARE\ODBC\ODBCINST.INI\ODBC Drivers" -s 2> /dev/null || true
+          reg query "HKEY_LOCAL_MACHINE\SOFTWARE\ODBC\ODBCINST.INI\ADF_ODBC_DRIVER" -s 2>/dev/null || true
+          reg query "HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\ODBC\ODBCINST.INI\ADF_ODBC_DRIVER" -s 2> /dev/null || true
+          echo "-------------------------"
+
+  "sign connector":
+    - command: shell.exec
+      type: system
+      params:
+        working_dir: mongo-powerbi-connector
+        script: | 
+          ${prepare_shell}
+          # SQL-1128: Implement signing for connector pqx file
+          cp MongoDBAtlasODBC.pqx MongoDBAtlasODBC-signed.pqx
 
   "upload packaged connector":
     - command: s3.put
@@ -213,7 +266,18 @@ functions:
         permissions: public-read
         content_type: application/octet-stream
 
-  "upload unit-test logs":
+  "upload integration test logs":
+    - command: s3.put
+      params:
+        aws_key: ${aws_key}
+        aws_secret: ${aws_secret}
+        local_file: mongo-powerbi-connector/MongoDBAtlasODBC.integration-test.log
+        remote_file: mongo-powerbi-connector/artifacts/${version_id}/${build_variant}/MongoDBAtlasODBC.integration-test.log
+        bucket: mciuploads
+        permissions: public-read
+        content_type: application/octet-stream
+
+  "upload unit test logs":
     - command: s3.put
       params:
         aws_key: ${aws_key}
@@ -225,11 +289,12 @@ functions:
         content_type: application/octet-stream
 
 pre:
-  - func: "fetch source"
+  - func: "fetch powerbi source"
   - func: "generate expansions"
   - func: "install power query tools"
-post:
-  - func: "upload unit-test logs"
+post: 
+  - func: "upload unit test logs"
+
 
 tasks:
   - name: build
@@ -241,7 +306,6 @@ tasks:
     depends_on:
       - name: build
     commands:
-      - func: "fetch packaged connector"
       - func: "install mongoimport tool"
       - func: "run integration test"
 
@@ -277,14 +341,29 @@ tasks:
       - func: "fetch signed connector"
       - func: "upload release"
 
+task_groups:
+  - name: test-integration-group
+    setup_group_can_fail_task: true
+    setup_group:
+      - func: "fetch powerbi source"
+      - func: "generate expansions"
+      - func: "fetch packaged connector"
+      - func: "install power query tools"
+      - func: "setup ODBC driver on Windows"
+    teardown_group:
+      - func: "clean up ODBC driver on Windows"
+      - func: "upload integration test logs"
+    tasks:
+      - integration-test
+
 buildvariants:
-  - name: windows
+  - name: windows-64
     display_name: "Windows"
     run_on: [ windows-64-vs2019-large ]
     tasks:
       - name: build
       - name: unit-test
-      - name: integration-test
+      - name: test-integration-group
       - name: sign
       - name: release
       - name: test-release

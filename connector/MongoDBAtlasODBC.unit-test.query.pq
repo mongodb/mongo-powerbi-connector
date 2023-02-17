@@ -35,7 +35,6 @@ shared UnitTests =
             "Logical.Type", 
             "Binary.Type"},
            Table.Schema(TransformSqlUnknownColumns(GetTableWithBsonTypes()))[TypeName]
-
         ),
         Fact("OnError - DataSource Error",
           "Data source error occurred.#(lf)SQLSTATE: 0100#(cr)#(lf)NativeError: 1#(cr)#(lf)Error message: DataSource Error Occurred",
