@@ -35,7 +35,25 @@ shared UnitTests =
             "Logical.Type", 
             "Binary.Type"},
            Table.Schema(TransformSqlUnknownColumns(GetTableWithBsonTypes()))[TypeName]
-
+        ),
+        Fact("OnError - DataSource Error",
+          "Data source error occurred.#(lf)SQLSTATE: 0100#(cr)#(lf)NativeError: 1#(cr)#(lf)Error message: DataSource Error Occurred",
+          try OnError([Reason = "DataSource.Error",
+            Message = "DataSource Error Occurred",
+            Detail = [ OdbcErrors = [NativeError = {1}, 
+            SQLState = {"0100"}]]])  catch (e)  => e[Message]
+        ),
+        Fact("OnError - Missing Client Library",
+          "Missing client library for datasource#(lf)Visit https://www.mongodb.com/atlas/sql for more information.",
+          try OnError([Reason = "DataSource.MissingClientLibrary", Message = "No Client Library"])  catch (e)  => e[Message]
+        ),
+        Fact("OnError - Credential Error",
+          "Credential error occurred.#(lf)Bad Credentials",
+          try OnError([Reason = "Extension.CredentialError", Message = "Bad Credentials"])  catch (e)  => e[Message]
+        ),
+        Fact("OnError - Unknown Error",
+          "An unknown error occurred. Error message:#(lf)This is an unknown error",
+          try OnError([Reason = "Unknown", Message = "This is an unknown error"])  catch (e)  => e[Message]
         )
     },
     report = Facts.Summarize(facts)
