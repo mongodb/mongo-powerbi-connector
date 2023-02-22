@@ -1,6 +1,7 @@
+# Installation
 ## Prerequisites
 
-#### Power BI Desktop
+### Power BI Desktop
 
 Download and install the latest version of Power BI Desktop on the [Power BI website](https://powerbi.microsoft.com/en-us/downloads/).
 
@@ -17,7 +18,7 @@ For example:
 Double click on `setupDSN.reg` to apply the registry changes.
 
 ### Optional: Data Gateway
-The on-premise data gateway is used as a bridge between the cloud-based Power BI service and your on-premises data sources, allowing you to securely transfer data between them.
+The on-premises data gateway is used as a bridge between the cloud-based Power BI service and your on-premises data sources, allowing you to securely transfer data between them.
 It allows the scheduling of data refreshes to ensure that the data is up-to-date in the Power BI service.
 
 Follow these [instructions](https://learn.microsoft.com/en-us/data-integration/gateway/service-gateway-install) to install the data gatway.
@@ -30,10 +31,10 @@ Download the Power BI custom connector release from the following link.  Replace
 https://translators-connectors-releases.s3.us-east-1.amazonaws.com/mongo-powerbi-connector/MongoDBAtlasODBC-${release_version}.pqx
 ```
 Copy the custom connector to the `[Documents]\Power BI Desktop\Custom Connectors` directory.  
-Note: The directory will need to be manually created if it does not already exist. 
+Note: If the directory does not exist, it will need to be manually created.
 
 #### Updating Power BI Security settings  
-Power BI security levels for Data Extensions will need to be lowered to allow the custom connector to be loaded.
+Power BI security levels for Data Extensions will need to be updated to allow the custom connector to be loaded.  
 Follow the instructions [here](https://learn.microsoft.com/en-us/power-bi/connect-data/desktop-connector-extensibility) to set the level to `(Not Recommended) Allow any extension to load without validation or warning.`
 
 

@@ -1,10 +1,10 @@
 # Smoke Test
 
-For a new system setup, follow the installation steps in [Install.md](link) 
+For a new system setup, follow the installation steps in [install.md](link) 
 
 ## Setup
 
-#### Start local ADF
+#### Start local Atlas Data Federation
 Set the following environment variables:
 ```
 export ADF_TEST_LOCAL_USER=<adf username>
@@ -18,8 +18,8 @@ Run the following to start a local ADF instance:
 ./resources/run_adf.sh start
 ```
 #### Install mongoimport
-Download and install [MongoDB tools](https://www.mongodb.com/try/download/database-tools)
-
+Download and install [MongoDB Command Line Database Tools](https://www.mongodb.com/try/download/database-tools)
+Add mongoimport.exe to the `PATH` and change permissions to make it executable.
 #### Load Sample Dataset
 ```
 mongoimport.exe --uri="mongodb://$ADF_TEST_LOCAL_HOST:$MDB_TEST_LOCAL_PORT/supplies" \
@@ -28,7 +28,7 @@ mongoimport.exe --uri="mongodb://$ADF_TEST_LOCAL_HOST:$MDB_TEST_LOCAL_PORT/integ
             --drop resources/integration_test/testdata/complex_types.json
 ```
 #### Generate Schema
-Generate the schema for the loaded data using the `mongo` executable downloaded by the `run_adf.sh` script
+Generate the schema for the data that was loaded using the `mongo` executable downloaded by the `run_adf.sh` script
 ```
 MONGOSHELL=$(find ./local_adf/ | grep mongo.exe | head -1) 
 chmod +x $MONGOSHELL
@@ -64,7 +64,7 @@ Test that the expected tables are shown in the navigation table and that data is
 * Confirm the `TypeName` and `NativeTypeName` columns have the expected values
   * The `TypeName` should be `Text.Type` for the complex types 
 * Transform the `array` column to JSON
-* Expand the list to new Rows
+* Expand the list to new rows
 * Click `Close and Apply`
 * In `Visualizations` choose `Clustered column chart`
 * In `Data` choose `double` and `integer`, verify the visualization is as expected
@@ -86,15 +86,17 @@ Test that data is loaded in the expected format when running a native query.
 * In `Visualizations` choose `Clustered column chart`
 * In `Data` for the Query choose `customer.age`, `customer.satisfaction`, and `_id`, verify the visualization is as expected
 
-### On-Premise Data Gateway
-* Open and sign in to the on-premises data gateway. 
+### On-Premises Data Gateway
+* Open and sign in to the on-premises data gateway
 * In Power BI, `Save` and `Publish` the report created in the previous steps
-* Ensure your gateway is set up by visiting the [gateways page](https://app.powerbi.com/groups/me/gateways). 
-* Visit the [Power BI Data hub](https://app.powerbi.com/datahub) and sign in. Your published data sources should appear here.
-* Hover over the data source, then use the `...` to select `settings`.
-* From here, you may be prompted to `Discover Data Sources`. 
-* Follow this prompt to establish the connection between Power BI and your database.
-* Return to your data set settings page, and you should now see additional options (i.e. “Gateway Connection” and “Data Source Credentials”). 
-* Expand the latter, and input the credentials for your local ADF.
-* Return to the data hub, and refresh the dataset. 
-* This should then result in an updated timestamp under refreshed.
+* Ensure your gateway is set up by visiting the [gateways page](https://app.powerbi.com/groups/me/gateways)
+* Visit the [Power BI Data hub](https://app.powerbi.com/datahub) and sign in 
+* Your published data sources should appear here
+* Hover over the data source, then use the `...` to select `settings`
+* From here, you may be prompted to `Discover Data Sources` 
+* Follow this prompt to establish the connection between Power BI and your database
+* Return to your data set settings page, and you should now see additional options (i.e. “Gateway Connection” and “Data Source Credentials”) 
+* Expand the latter, and input the credentials for your local ADF
+* Return to the data hub, and refresh the dataset 
+* This should then result in an updated timestamp under refreshed
+
