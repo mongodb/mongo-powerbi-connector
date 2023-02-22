@@ -1,6 +1,6 @@
 # Smoke Test
 
-For a new system setup, follow the installation steps in [install.md](link) 
+For a new system setup, follow the installation steps in [install.md](install.md) 
 
 ## Setup
 
