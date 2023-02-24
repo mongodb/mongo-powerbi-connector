@@ -15,7 +15,7 @@ export MDB_TEST_LOCAL_PORT=<MongoDB port>
 Windows:
 ```
 setx ADF_TEST_LOCAL_USER "<adf username>"
-setx ADF_TEST_LOCAL_PWD "adf password>"
+setx ADF_TEST_LOCAL_PWD "<adf password>"
 setx ADF_TEST_LOCAL_AUTH_DB "<local auth db>"
 setx ADF_TEST_LOCAL_HOST "<local host address>"
 setx MDB_TEST_LOCAL_PORT "<MongoDB port>"
