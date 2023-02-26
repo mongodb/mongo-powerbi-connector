@@ -113,7 +113,8 @@ shared GetConnectionString = (uri as text, database as text) as record =>
         ConnectionString = [
             DRIVER = "MongoDB Atlas SQL ODBC Driver",
             DATABASE = database,
-            URI = uri
+            URI = uri,
+            APPNAME ="powerbi-connector"
         ]
     in
         if DatabaseNotSet then
