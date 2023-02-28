@@ -111,7 +111,7 @@ shared GetConnectionString = (uri as text, database as text) as record =>
     let
         DatabaseNotSet = (database = ""),
         ConnectionString = [
-            DRIVER = "ADF_ODBC_DRIVER",
+            DRIVER = "MONGODB_ODBC_DRIVER",
             DATABASE = database,
             URI = uri
         ]
