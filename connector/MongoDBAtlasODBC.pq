@@ -111,7 +111,7 @@ shared GetConnectionString = (uri as text, database as text) as record =>
     let
         DatabaseNotSet = (database = ""),
         ConnectionString = [
-            DRIVER = "MONGODB_ODBC_DRIVER",
+            DRIVER = "MongoDB Atlas SQL ODBC Driver",
             DATABASE = database,
             URI = uri
         ]

@@ -203,8 +203,8 @@ functions:
           echo "----- Registry entries after setup ----"
           reg query "HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\ODBC\ODBCINST.INI\ODBC Drivers" -s 2> /dev/null || true
           reg query "HKEY_LOCAL_MACHINE\SOFTWARE\ODBC\ODBCINST.INI\ODBC Drivers" -s 2> /dev/null || true
-          reg query "HKEY_LOCAL_MACHINE\SOFTWARE\ODBC\ODBCINST.INI\MONGODB_ODBC_DRIVER" -s 2>/dev/null || true
-          reg query "HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\ODBC\ODBCINST.INI\MONGODB_ODBC_DRIVER" -s 2> /dev/null || true
+          reg query "HKEY_LOCAL_MACHINE\SOFTWARE\ODBC\ODBCINST.INI\MongoDB Atlas SQL ODBC Driver" -s 2>/dev/null || true
+          reg query "HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\ODBC\ODBCINST.INI\MongoDB Atlas SQL ODBC Driver" -s 2> /dev/null || true
           echo "-------------------------"
 
   "clean up ODBC driver on Windows":
@@ -218,8 +218,8 @@ functions:
           echo "----- Registry entries after clean-up----"
           reg query "HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\ODBC\ODBCINST.INI\ODBC Drivers" -s 2> /dev/null || true
           reg query "HKEY_LOCAL_MACHINE\SOFTWARE\ODBC\ODBCINST.INI\ODBC Drivers" -s 2> /dev/null || true
-          reg query "HKEY_LOCAL_MACHINE\SOFTWARE\ODBC\ODBCINST.INI\MONGODB_ODBC_DRIVER" -s 2>/dev/null || true
-          reg query "HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\ODBC\ODBCINST.INI\MONGODB_ODBC_DRIVER" -s 2> /dev/null || true
+          reg query "HKEY_LOCAL_MACHINE\SOFTWARE\ODBC\ODBCINST.INI\MongoDB Atlas SQL ODBC Driver" -s 2>/dev/null || true
+          reg query "HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\ODBC\ODBCINST.INI\MongoDB Atlas SQL ODBC Driver" -s 2> /dev/null || true
           echo "-------------------------"
 
   "sign connector":
