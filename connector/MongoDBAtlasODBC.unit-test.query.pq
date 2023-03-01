@@ -4,7 +4,7 @@ shared UnitTests =
     facts = 
     {
         Fact("GetConnectionString - Set URI option",
-          [ DRIVER = "ADF_ODBC_DRIVER", DATABASE = "db", URI = "mongodb://hostname/admin?ssl=true" ],
+          [ DRIVER = "MongoDB Atlas SQL ODBC Driver", DATABASE = "db", URI = "mongodb://hostname/admin?ssl=true" ],
           GetConnectionString("mongodb://hostname/admin?ssl=true", "db")
         ),
         Fact("GetConnectionString - Empty database value results in error",
