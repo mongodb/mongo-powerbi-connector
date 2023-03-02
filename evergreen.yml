@@ -135,8 +135,8 @@ functions:
             --drop resources/integration_test/testdata/sales.json &&
           ./mongoimport.exe --uri="mongodb://$ADF_TEST_LOCAL_HOST:$MDB_TEST_LOCAL_PORT/integration_test" \
             --drop resources/integration_test/testdata/complex_types.json &&
-          
-          
+
+
           MONGOSHELL=$(find ./local_adf/ | grep mongo.exe | head -1) &&
           chmod +x $MONGOSHELL &&
 
@@ -150,7 +150,7 @@ functions:
           echo $(eval echo $(cat resources/credentials.json )) | tools/PQTest.exe set-credential \
             --extension MongoDBAtlasODBC.pqx \
             --queryFile connector/MongoDBAtlasODBC.integration-test.query.pq &&
-          
+
           # Run Integration Test
           test_output=`tools/PQTest.exe run-test --extension MongoDBAtlasODBC.pqx \
             --queryFile connector/MongoDBAtlasODBC.integration-test.query.pq --prettyPrint`
@@ -165,7 +165,7 @@ functions:
               EXITCODE=1
             fi
           fi
-          
+
           # Stop local ADF, always run this to keep task from hanging
           ./resources/run_adf.sh stop
           exit $EXITCODE
@@ -196,7 +196,7 @@ functions:
         working_dir: mongo-powerbi-connector
         script: |
           ${prepare_shell}
-          curl -O https://translators-connectors-releases.s3.us-east-1.amazonaws.com/mongosql-odbc-driver/windows/snapshot/mongoodbc.dll
+          curl -O https://translators-connectors-releases.s3.us-east-1.amazonaws.com/mongosql-odbc-driver/windows/snapshot/release/mongoodbc.dll
           chmod 777 ./mongoodbc.dll
           sed -i 's@%DRIVER_DLL_PATH%@'"$(echo "$(cygpath -w $(pwd))" | sed s',\\,\\\\\\\\,g')"'@' resources/odbc/setupDSN.reg
           reg import "resources\odbc\setupDSN.reg"
@@ -212,7 +212,7 @@ functions:
       params:
         shell: bash
         working_dir: mongo-powerbi-connector
-        script:  |
+        script: |
           ${prepare_shell}
           reg import "resources\odbc\cleanup_driver.reg"
           echo "----- Registry entries after clean-up----"
@@ -227,7 +227,7 @@ functions:
       type: system
       params:
         working_dir: mongo-powerbi-connector
-        script: | 
+        script: |
           ${prepare_shell}
           # SQL-1128: Implement signing for connector pqx file
           cp MongoDBAtlasODBC.pqx MongoDBAtlasODBC-signed.pqx
@@ -292,9 +292,8 @@ pre:
   - func: "fetch powerbi source"
   - func: "generate expansions"
   - func: "install power query tools"
-post: 
+post:
   - func: "upload unit test logs"
-
 
 tasks:
   - name: build
@@ -336,7 +335,7 @@ tasks:
   - name: test-release
     patch_only: true
     depends_on:
-     - name: sign
+      - name: sign
     commands:
       - func: "fetch signed connector"
       - func: "upload release"
@@ -359,7 +358,7 @@ task_groups:
 buildvariants:
   - name: windows-64
     display_name: "Windows"
-    run_on: [ windows-64-vs2019-large ]
+    run_on: [windows-64-vs2019-large]
     tasks:
       - name: build
       - name: unit-test
