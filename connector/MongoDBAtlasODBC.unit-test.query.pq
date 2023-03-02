@@ -5,7 +5,7 @@ shared UnitTests = [
         Fact(
             "GetConnectionString - Set URI option",
             [
-                DRIVER = "ADF_ODBC_DRIVER",
+                DRIVER = "MongoDB Atlas SQL ODBC Driver",
                 DATABASE = "db",
                 URI = "mongodb://hostname/admin?ssl=true",
                 APPNAME = "powerbi-connector"
