@@ -33,6 +33,17 @@ https://translators-connectors-releases.s3.us-east-1.amazonaws.com/mongo-powerbi
 Copy the custom connector to the `[Documents]\Power BI Desktop\Custom Connectors` directory.  
 Note: If the directory does not exist, it will need to be manually created.
 
+### Enabling Custom Connector
+Users have two options to enable the custom connector in Power BI.  These are: adding the thumbprint of the certificate on the connector to the registry (recommended), or lowering the security settings in Power BI. 
+
+#### Adding Thumbprint to Registry
+Follow these [instructions](https://learn.microsoft.com/en-us/power-bi/connect-data/desktop-trusted-third-party-connectors#using-the-registry-to-trust-third-party-connectors) to add the thumbprint value to the registry Multi-String Value key:
+`HKEY_LOCAL_MACHINE\Software\Policies\Microsoft\Power BI Desktop\TrustedCertificateThumbprints`
+Note: If the specified registry key or subkeys are not present, they can be manually created
+```
+Thumbprint Value: 8E255070BD89A7249A5B2EC5CF22BF6D84BDF80F
+```
+
 #### Updating Power BI Security settings  
 Power BI security levels for Data Extensions will need to be updated to allow the custom connector to be loaded.  
 Follow the instructions [here](https://learn.microsoft.com/en-us/power-bi/connect-data/desktop-connector-extensibility) to set the level to `(Not Recommended) Allow any extension to load without validation or warning.`
