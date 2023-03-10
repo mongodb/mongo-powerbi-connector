@@ -48,4 +48,3 @@ Thumbprint Value: 8E255070BD89A7249A5B2EC5CF22BF6D84BDF80F
 Power BI security levels for Data Extensions will need to be updated to allow the custom connector to be loaded.  
 Follow the instructions [here](https://learn.microsoft.com/en-us/power-bi/connect-data/desktop-connector-extensibility) to set the level to `(Not Recommended) Allow any extension to load without validation or warning.`
 
-
