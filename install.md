@@ -38,7 +38,7 @@ Users have two options to enable the custom connector in Power BI.  Adding the t
 
 #### Adding Thumbprint to Registry
 Follow these [instructions](https://learn.microsoft.com/en-us/power-bi/connect-data/desktop-trusted-third-party-connectors#using-the-registry-to-trust-third-party-connectors) to add the thumbprint value to the registry Multi-String Value key:
-`HKEY_LOCAL_MACHINE\Software\Policies\Microsoft\Power BI Desktop\TrustedCertificateThumbprints`
+`HKEY_LOCAL_MACHINE\Software\Policies\Microsoft\Power BI Desktop\TrustedCertificateThumbprints`  
 Note: If the specified registry key or subkeys are not present, they can be manually created
 ```
 Thumbprint Value: 8E255070BD89A7249A5B2EC5CF22BF6D84BDF80F
