@@ -87,6 +87,9 @@ functions:
             export ADF_TEST_LOCAL_AUTH_DB="${adf_test_local_auth_db}"
             export ADF_TEST_LOCAL_HOST="${adf_test_local_host}"
             export MDB_TEST_LOCAL_PORT="${mdb_test_local_port}"
+            export SELF_SIGNED_PWD="${self_signed_pwd}"
+            export SELF_SIGNED_CERT="${self_signed_cert}"
+            export SELF_SIGNED_KEY="${self_signed_key}"
           EOT
     - command: expansions.update
       params:
@@ -226,10 +229,16 @@ functions:
     - command: shell.exec
       type: system
       params:
+        silent: true
         working_dir: mongo-powerbi-connector
         script: |
           ${prepare_shell}
-          # SQL-1128: Implement signing for connector pqx file
+          echo -ne $SELF_SIGNED_CERT > mdb-self-signed-certificate.crt
+          echo -ne $SELF_SIGNED_KEY > mdb-self-signed-key.pem
+          # Convert certificate to pfx format, used by MakePQX.exe
+          openssl pkcs12 -export -out mdb-self-signed-certificate.pfx -inkey mdb-self-signed-key.pem -in mdb-self-signed-certificate.crt -password pass:$SELF_SIGNED_PWD
+          tools/MakePQX.exe sign MongoDBAtlasODBC.pqx --certificate  mdb-self-signed-certificate.pfx --password $SELF_SIGNED_PWD
+          tools/MakePQX.exe verify MongoDBAtlasODBC.pqx
           cp MongoDBAtlasODBC.pqx MongoDBAtlasODBC-signed.pqx
 
   "upload packaged connector":
@@ -319,8 +328,10 @@ tasks:
     depends_on:
       - name: build
       - name: unit-test
+      - name: integration-test
     commands:
       - func: "fetch packaged connector"
+      - func: "install power query tools"
       - func: "sign connector"
       - func: "upload signed connector"
 
