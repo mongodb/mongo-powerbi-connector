@@ -1,17 +1,23 @@
 # MongoDB Atlas SQL interface
 
+> [!Note] The following connector article is provided by MongoDB, the owner of this connector and a member of the 
+> Microsoft Power Query Connector Certification Program. If you have questions regarding the content of this article or 
+> have changes you would like to see made to this article, visit the MongoDB website and use the support channels there.
+
 ## Summary
 
-| Item                               | Description                                                                                                                                                                                   |
-|------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Release State                      | Preview                                                                                                                                                                                       |
-| Products                           | Power BI (datasets)                                                                                                                                                                           |
-| Authentication Types Supported     | Database (Username/Password)                                                                                                                                                                  |
+| Item                               | Description                  |
+|------------------------------------|------------------------------|
+| Release State                      | Preview                      |
+| Products                           | Power BI (datasets)          |
+| Authentication Types Supported     | Database (Username/Password) |
 
 ## Prerequisites
-To use the MongoDB Atlas SQL connector, you must have an [Atlas federated database](https://www.mongodb.com/docs/atlas/data-federation/) setup.
+To use the MongoDB Atlas SQL connector, you must have an 
+[Atlas federated database](https://www.mongodb.com/docs/atlas/data-federation/) setup.
 > [!NOTE]
-> If some or all of your data comes from an Atlas cluster, you must use MongoDB version 5.0 or greater for that cluster to take advantage of Atlas SQL.
+> If some or all of your data comes from an Atlas cluster, you must use MongoDB version 5.0 or greater for that cluster 
+> to take advantage of Atlas SQL.
 
 We also recommend to install the MongoDB Atlas SQL ODBC Driver before using the MongoDB Atlas SQL connector.
 
@@ -35,7 +41,8 @@ To connect using the Atlas SQL interface :
 3. Select **Database** from the categories on the left, select **MongoDB Atlas SQL**, and then select **Connect**.
 
 2. In the MongoDB Atlas SQL window that appears provide:
-   - The **MongoDB URI** you retrieved previously. Make sure that it does not contain your username and password or it will be rejected.
+   - The **MongoDB URI** you retrieved previously. Make sure that it does not contain your username and password or it 
+     will be rejected.
    - Your federated **Database** name.
    - An optional **SQL statement**.
    
@@ -43,13 +50,20 @@ To connect using the Atlas SQL interface :
 
 5. Enter your Atlas MongoDB Database access username and password and select **Connect**.
    > [!NOTE]
-   > Once you enter your username and password for a particular Atlas federated database, Power BI Desktop uses those same credentials in subsequent connection attempts. You can modify those credentials by going to **File > Options and settings > Data source settings**. More information: [Change the authentication method](../connector-authentication.md#change-the-authentication-method)
+   > Once you enter your username and password for a particular Atlas federated database, Power BI Desktop uses those 
+   > same credentials in subsequent connection attempts. You can modify those credentials by going to **File > Options 
+   > and settings > Data source settings**.  
+   > More information: [Change the authentication method](../connector-authentication.md#change-the-authentication-method)
 
-6. In **Navigator**, select one or multiple elements to import and use in Power BI Desktop. Then select either **Load** to load the table in Power BI Desktop, or **Transform Data** to open the Power Query Editor where you can filter and refine the set of data you want to use, and then load that refined set of data into Power BI Desktop.
+6. In **Navigator**, select one or multiple elements to import and use in Power BI Desktop. 
+   Then select either **Load** to load the table in Power BI Desktop, or **Transform Data** to open the Power Query 
+   Editor where you can filter and refine the set of data you want to use, and then load that refined set of data into 
+   Power BI Desktop.
 
 ## Troubleshooting
 
-When the connection cannot be established successfully, the generic error message `The driver returned invalid (or failed to return) SQL_DRIVER_ODBC_VER: 03.80` is diplayed.
+When the connection cannot be established successfully, the generic error message 
+`The driver returned invalid (or failed to return) SQL_DRIVER_ODBC_VER: 03.80` is diplayed.
 Start by checking your credentials and that you have no network issues accessing your federated database.
 
 ## Next steps
