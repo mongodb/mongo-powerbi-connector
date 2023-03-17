@@ -41,7 +41,7 @@ To connect using the Atlas SQL interface :
 3. Select **Database** from the categories on the left, select **MongoDB Atlas SQL**, and then select **Connect**.
 
 4. If this is the first time you're connecting to MongoDB Atlas SQL connector, a third-party notice will be displayed. 
-   Select Don't warn me again with this connector if you don't want this message to be displayed again, 
+   Select **"Don't warn me again with this connector"** if you don't want this message to be displayed again.
    and then select **Continue**. 
 
 5. In the MongoDB Atlas SQL window that appears provide:
