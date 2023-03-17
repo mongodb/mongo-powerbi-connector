@@ -51,7 +51,7 @@ To connect using the Atlas SQL interface :
    -  Your federated **Database** name. _Required_
    
       Use the name of the federated database you obtained in step 1.
-   - An optional **SQL statement**.
+   - A **SQL statement**.  _Optional_
    
    Select **Continue**. 
 6. Enter your Atlas MongoDB Database access username and password and select **Connect**.
