@@ -45,7 +45,7 @@ To connect using the Atlas SQL interface :
 
    Select **Continue**. 
 
-5. In the MongoDB Atlas SQL window that appears provide:
+5. In the MongoDB Atlas SQL window that appears, fill in the following values:
    - The **MongoDB URI** you retrieved previously. Make sure that it does not contain your username and password or it 
      will be rejected.
    - Your federated **Database** name.
