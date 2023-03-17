@@ -42,7 +42,8 @@ To connect using the Atlas SQL interface :
 
 4. If this is the first time you're connecting to MongoDB Atlas SQL connector, a third-party notice will be displayed. 
    Select **"Don't warn me again with this connector"** if you don't want this message to be displayed again.
-   and then select **Continue**. 
+
+   Select **Continue**. 
 
 5. In the MongoDB Atlas SQL window that appears provide:
    - The **MongoDB URI** you retrieved previously. Make sure that it does not contain your username and password or it 
