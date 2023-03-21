@@ -251,6 +251,15 @@ functions:
         bucket: mciuploads
         permissions: public-read
         content_type: application/octet-stream
+    - command: s3.put
+      params:
+        aws_key: ${aws_key}
+        aws_secret: ${aws_secret}
+        local_file: mongo-powerbi-connector/connector/bin/AnyCPU/Debug/connector.mez
+        remote_file: mongo-powerbi-connector/artifacts/${version_id}/${build_variant}/MongoDBAtlasODBC.mez
+        bucket: mciuploads
+        permissions: public-read
+        content_type: application/octet-stream
 
   "upload release":
     - command: s3.put
@@ -262,6 +271,22 @@ functions:
         bucket: translators-connectors-releases
         permissions: public-read
         display_name: MongoDBAtlasODBC-${RELEASE_VERSION}.pqx
+        content_type: application/octet-stream
+    - command: s3.get
+      params:
+        aws_key: ${aws_key}
+        aws_secret: ${aws_secret}
+        remote_file: mongo-powerbi-connector/artifacts/${version_id}/${build_variant}/MongoDBAtlasODBC.mez
+        local_file: mongo-powerbi-connector/MongoDBAtlasODBC.mez
+        bucket: mciuploads
+    - command: s3.put
+      params:
+        aws_key: ${release_aws_key}
+        aws_secret: ${release_aws_secret}
+        local_file: mongo-powerbi-connector/MongoDBAtlasODBC.mez
+        remote_file: mongo-powerbi-connector/MongoDBAtlasODBC-${RELEASE_VERSION}.mez
+        bucket: translators-connectors-releases
+        permissions: public-read
         content_type: application/octet-stream
 
   "upload signed connector":
