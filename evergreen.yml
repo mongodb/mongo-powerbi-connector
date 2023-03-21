@@ -260,6 +260,7 @@ functions:
         bucket: mciuploads
         permissions: public-read
         content_type: application/octet-stream
+        display_name: MongoDBAtlasODBC.mez
 
   "upload release":
     - command: s3.put
@@ -288,6 +289,7 @@ functions:
         bucket: translators-connectors-releases
         permissions: public-read
         content_type: application/octet-stream
+        display_name: MongoDBAtlasODBC-${RELEASE_VERSION}.mez
 
   "upload signed connector":
     - command: s3.put
