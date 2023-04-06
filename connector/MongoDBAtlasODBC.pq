@@ -27,40 +27,26 @@ MongoDBAtlasODBCType = type function (
             Documentation.SampleValues = {"db"}
         ]
     ),
-    optional query as (
-        type text meta [
-            Documentation.FieldCaption = "SQL Statement",
-            Documentation.SampleValues = {"SELECT * FROM table"},
-            Formatting.IsMultiLine = true,
-            Formatting.IsCode = true
-        ]
-    ),
     optional options as record
 ) as table meta [
     Documentation.Name = "MongoDB Atlas SQL"
 ];
 
-MongoDBAtlasODBCImpl = (mongodbUri as text, database as text, optional query as text, optional options as record) as table =>
+MongoDBAtlasODBCImpl = (mongodbUri as text, database as text, optional options as record) as table =>
     let
         ConnectionString = Diagnostics.LogValue("ConnectionString", GetConnectionString(mongodbUri, database)),
         CredentialConnectionString = GetCredentialConnectionString(),
         Config = Diagnostics.LogValue("BuildOdbcConfig", BuildOdbcConfig()),
         DataSource =
-            if query <> null then
-                Odbc.Query(ConnectionString, query, [CredentialConnectionString = CredentialConnectionString])
-            else
                 Odbc.DataSource(ConnectionString, Config & [OnError = OnError, CredentialConnectionString = CredentialConnectionString]),
         TransformColumns =
             let
                 TransformColumns =
-                    if query <> null then
-                        TransformSqlUnknownColumns(DataSource)
-                    else
-                        TransformColumnKeepType(
-                            DataSource,
-                            "Data",
-                            (tables) => TransformColumnKeepType(tables, "Data", TransformSqlUnknownColumns)
-                        )
+                    TransformColumnKeepType(
+                        DataSource,
+                        "Data",
+                        (tables) => TransformColumnKeepType(tables, "Data", TransformSqlUnknownColumns)
+                    )
             in
                 TransformColumns
     in

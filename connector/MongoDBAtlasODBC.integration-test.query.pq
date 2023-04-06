@@ -1,7 +1,7 @@
 section MongoDBAtlasODBCIntegrationTests;
   shared IntegrationTests = [
     uri = "mongodb://localhost/?ssl=false", 
-    DataSource = MongoDBAtlasODBC.Contents(uri, "supplies", null, []),
+    DataSource = MongoDBAtlasODBC.Contents(uri, "supplies", []),
     // Sort the sales table, and retain first row
     DataSource_Sales = Table.FirstN(
       Table.Sort(
@@ -19,19 +19,6 @@ section MongoDBAtlasODBCIntegrationTests;
       [Data]
       {[Name = "complex_types", Kind = "Table"]}
       [Data], 
-    Query_Sales_Unqualified = Table.FirstN(
-      Table.Sort(
-        MongoDBAtlasODBC.Contents(uri, "supplies", "select * from sales", []), 
-        {{"_id", Order.Ascending}}
-      ), 
-      1
-    ), 
-    Query_Complex_Types_Qualified = MongoDBAtlasODBC.Contents(
-      uri, 
-      "supplies", 
-      "select * from integration_test.complex_types", 
-      []
-    ), 
     Sales_Row = {
       [
         _id = "{""$oid"":""5bd761dcae323e45a93ccfeb""}", 
@@ -102,16 +89,6 @@ section MongoDBAtlasODBCIntegrationTests;
         Table.ToRecords(DataSource_Complex_Types)
       ), 
       Fact(
-        "Query matching database name works with unqualified collection name", 
-        Sales_Row, 
-        Table.ToRecords(Query_Sales_Unqualified)
-      ), 
-      Fact(
-        "Query different database name requires qualified collection name", 
-        Complex_Types_Row, 
-        Table.ToRecords(Query_Complex_Types_Qualified)
-      ), 
-      Fact(
         "Check schema, embedded complex types are tranformed to string", 
         [items = {"Text.Type"}, customer = {"Text.Type"}], 
         [
@@ -124,29 +101,6 @@ section MongoDBAtlasODBCIntegrationTests;
             each Text.Contains([Name], "customer")
           )[TypeName]
         ]
-      ), 
-      Fact(
-        "Check schema, complex types only are tranformed to Text", 
-        [array = {"Text.Type"}, boolean = {"Logical.Type"}, object = {"Text.Type"}], 
-        [
-          array = Table.SelectRows(
-            Table.Schema(Query_Complex_Types_Qualified), 
-            each Text.Contains([Name], "array")
-          )[TypeName], 
-          boolean = Table.SelectRows(
-            Table.Schema(Query_Complex_Types_Qualified), 
-            each Text.Contains([Name], "boolean")
-          )[TypeName], 
-          object = Table.SelectRows(
-            Table.Schema(Query_Complex_Types_Qualified), 
-            each Text.Contains([Name], "regularExpression")
-          )[TypeName]
-        ]
-      ), 
-      Fact(
-        "NativeTypeName facet is retained in complex types from query", 
-        Complex_Types_NativeTypeNames, 
-        Table.Schema(Query_Complex_Types_Qualified)[NativeTypeName]
       ), 
       Fact(
         "NativeTypeName facet is retained in complex types from navigation table", 
