@@ -173,25 +173,6 @@ functions:
           ./resources/run_adf.sh stop
           exit $EXITCODE
 
-  "run unit-test":
-    - command: shell.exec
-      type: test
-      params:
-        shell: bash
-        working_dir: mongo-powerbi-connector
-        script: |
-          ${prepare_shell}
-          test_output=`tools/PQTest.exe run-test --extension MongoDBAtlasODBC.pqx \
-          --queryFile connector/MongoDBAtlasODBC.unit-test.query.pq --prettyPrint` 
-          echo "$test_output"
-          failures=`echo "$test_output"  | grep Failure -A 1 || true` 
-          echo $test_output > MongoDBAtlasODBC.unit-test.log 
-          if [[ ! -z $failures ]]; then 
-            echo "Failures Encountered:"
-            echo $failures
-            exit 1
-          fi
-
   "setup ODBC driver on Windows":
     - command: shell.exec
       params:
@@ -313,23 +294,10 @@ functions:
         permissions: public-read
         content_type: application/octet-stream
 
-  "upload unit test logs":
-    - command: s3.put
-      params:
-        aws_key: ${aws_key}
-        aws_secret: ${aws_secret}
-        local_file: mongo-powerbi-connector/MongoDBAtlasODBC.unit-test.log
-        remote_file: mongo-powerbi-connector/artifacts/${version_id}/${build_variant}/MongoDBAtlasODBC.unit-test.log
-        bucket: mciuploads
-        permissions: public-read
-        content_type: application/octet-stream
-
 pre:
   - func: "fetch powerbi source"
   - func: "generate expansions"
   - func: "install power query tools"
-post:
-  - func: "upload unit test logs"
 
 tasks:
   - name: build
@@ -344,17 +312,9 @@ tasks:
       - func: "install mongoimport tool"
       - func: "run integration test"
 
-  - name: unit-test
-    depends_on:
-      - name: build
-    commands:
-      - func: "fetch packaged connector"
-      - func: "run unit-test"
-
   - name: sign
     depends_on:
       - name: build
-      - name: unit-test
       - name: integration-test
     commands:
       - func: "fetch packaged connector"
@@ -399,7 +359,6 @@ buildvariants:
     run_on: [windows-64-vs2019-large]
     tasks:
       - name: build
-      - name: unit-test
       - name: test-integration-group
       - name: sign
       - name: release

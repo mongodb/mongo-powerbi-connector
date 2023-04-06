@@ -77,7 +77,7 @@ GetCredentialConnectionString = () as record =>
         CredentialConnectionString;
 
 // Transforms the columns that the driver specifies as SQL_UNKNOWN_TYPE from binary to text values
-shared TransformSqlUnknownColumns = (table) =>
+TransformSqlUnknownColumns = (table) =>
     let
         Schema = Table.Schema(table),
         SqlBinaryTypes = Diagnostics.LogValue("TransformSqlUnknownColumns", Table.ToRecords(
@@ -101,13 +101,13 @@ shared TransformSqlUnknownColumns = (table) =>
         TransformOperations;
 
 // Executes operation on specified columnName of the passed in table
-shared TransformColumnKeepType = (table, columnName, operation) =>
+TransformColumnKeepType = (table, columnName, operation) =>
     let
         TableType = Value.Type(table), TransformColumn = Table.TransformColumns(table, {columnName, operation})
     in
         Value.ReplaceType(TransformColumn, TableType);
 
-shared GetConnectionString = (uri as text, database as text) as record =>
+GetConnectionString = (uri as text, database as text) as record =>
     let
         DatabaseNotSet = (database = ""),
         ConnectionString = [
@@ -125,7 +125,7 @@ shared GetConnectionString = (uri as text, database as text) as record =>
 DataSourceError = "DataSource.Error";
 DataSourceMissingClientLibrary = "DataSource.MissingClientLibrary";
 ExtensionCredentialError = "Extension.CredentialError";
-shared OnError = (errorRecord as record) =>
+OnError = (errorRecord as record) =>
     let
         ErrRecord = Diagnostics.LogValue("OnError Record", errorRecord),
         Reason = ErrRecord[Reason]?,
@@ -204,20 +204,7 @@ MongoDBAtlasODBC.Icons = [
 
 BuildOdbcConfig = () as record =>
     let
-        AstVisitor = [
-            // Specifying the supported LIMIT OFFSET format
-            LimitClause = (skip, take) =>
-                let
-                    offset = if (skip > 0) then Text.Format("OFFSET #{0}", {skip}) else "",
-                    limit = if (take <> null) then Text.Format("LIMIT #{0}", {take}) else ""
-                in
-                    [
-                        Text = Text.Format("#{0} #{1}", {offset, limit}),
-                        Location = "AfterQuerySpecification"
-                    ]
-        ],
         Config = [
-            AstVisitor = AstVisitor,
             HierarchicalNavigation = true,
             SqlCapabilities = [
                 FractionalSecondsScale = 3,
