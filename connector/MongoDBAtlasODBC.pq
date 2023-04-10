@@ -67,7 +67,7 @@ MongoDBAtlasODBCQueryType = type function (
     ),
     optional options as record
 ) as table meta [
-    Documentation.Name = "MongoDB Atlas SQL Query"
+    Documentation.Name = "MongoDB Atlas SQL"
 ];
 
 MongoDBAtlasODBCImpl = (mongodbUri as text, database as text, optional options as record) as table =>
@@ -78,16 +78,16 @@ MongoDBAtlasODBCImpl = (mongodbUri as text, database as text, optional options a
         DataSource = Odbc.DataSource(
             ConnectionString, Config & [OnError = OnError, CredentialConnectionString = CredentialConnectionString]
         ),
-        TransformColumns =
+        ResultsWithTransformedColumns =
             let
-                TransformColumns = TransformColumnKeepType(
+                TransformedColumns = TransformColumnKeepType(
                     DataSource, "Data", (tables) =>
                         TransformColumnKeepType(tables, "Data", TransformSqlUnknownColumns)
                 )
             in
-                TransformColumns
+                TransformedColumns
     in
-        TransformColumns;
+        ResultsWithTransformedColumns;
 
 MongoDBAtlasODBCQueryImpl = (mongodbUri as text, database as text,  query as text, optional options as record) as table =>
     let
@@ -95,9 +95,9 @@ MongoDBAtlasODBCQueryImpl = (mongodbUri as text, database as text,  query as tex
         CredentialConnectionString = GetCredentialConnectionString(),
         Config = Diagnostics.LogValue("BuildOdbcConfig", BuildOdbcConfig()),
         QueryResults = Odbc.Query(ConnectionString, query, [CredentialConnectionString = CredentialConnectionString]),
-        TransformColumns = TransformSqlUnknownColumns(QueryResults)
+        QueryResultsWithTransformedColumns = TransformSqlUnknownColumns(QueryResults)
     in
-        TransformColumns;
+        QueryResultsWithTransformedColumns;
 
 GetCredentialConnectionString = () as record =>
     let
