@@ -1,7 +1,7 @@
 section MongoDBAtlasODBCIntegrationTests;
   shared IntegrationTests = [
     uri = "mongodb://localhost/?ssl=false", 
-    DataSource = MongoDBAtlasODBC.Contents(uri, "supplies", null, []),
+    DataSource = MongoDBAtlasODBC.Contents(uri, "supplies", []),
     // Sort the sales table, and retain first row
     DataSource_Sales = Table.FirstN(
       Table.Sort(
@@ -21,12 +21,12 @@ section MongoDBAtlasODBCIntegrationTests;
       [Data], 
     Query_Sales_Unqualified = Table.FirstN(
       Table.Sort(
-        MongoDBAtlasODBC.Contents(uri, "supplies", "select * from sales", []), 
+        MongoDBAtlasODBC.Query(uri, "supplies", "select * from sales", []), 
         {{"_id", Order.Ascending}}
       ), 
       1
     ), 
-    Query_Complex_Types_Qualified = MongoDBAtlasODBC.Contents(
+    Query_Complex_Types_Qualified = MongoDBAtlasODBC.Query(
       uri, 
       "supplies", 
       "select * from integration_test.complex_types", 
