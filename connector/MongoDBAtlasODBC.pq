@@ -10,7 +10,16 @@ EnableTraceOutput = false;
 AtlasSQLLink="https://www.mongodb.com/atlas/sql";
 
 [DataSource.Kind = "MongoDBAtlasODBC", Publish = "MongoDBAtlasODBC.Publish"]
-shared MongoDBAtlasODBC.Contents = Value.ReplaceType(MongoDBAtlasODBCImpl, MongoDBAtlasODBCType);
+shared MongoDBAtlasODBC.Contents = Value.ReplaceType(
+    (mongoDbUri, database, optional options) => MongoDBAtlasODBCImpl(mongoDbUri, database, options),
+    MongoDBAtlasODBCType
+);
+
+[DataSource.Kind = "MongoDBAtlasODBC"]
+shared MongoDBAtlasODBC.Query = Value.ReplaceType(
+    (mongoDbUri, database, query, optional options) => MongoDBAtlasODBCQueryImpl(mongoDbUri, database, query, options),
+    MongoDBAtlasODBCQueryType
+);
 
 MongoDBAtlasODBCType = type function (
     mongodbUri as (
@@ -27,8 +36,29 @@ MongoDBAtlasODBCType = type function (
             Documentation.SampleValues = {"db"}
         ]
     ),
-    optional query as (
+    optional options as record
+) as table meta [
+    Documentation.Name = "MongoDB Atlas SQL"
+];
+
+MongoDBAtlasODBCQueryType = type function (
+    mongodbUri as (
         type text meta [
+            Documentation.FieldCaption = "MongoDB URI",
+            Documentation.FieldDescription = "MongoDB connection URI",
+            Documentation.SampleValues = {"mongodb://hostname:port/?ssl=true&authSource=admin"}
+        ]
+    ),
+    database as (
+        type text meta [
+            Documentation.FieldCaption = "Database",
+            Documentation.FieldDescription = "Database to connect to",
+            Documentation.SampleValues = {"db"}
+        ]
+    ),
+    query as (
+        type text meta [
+            DataSource.Path = false,
             Documentation.FieldCaption = "SQL Statement",
             Documentation.SampleValues = {"SELECT * FROM table"},
             Formatting.IsMultiLine = true,
@@ -40,31 +70,34 @@ MongoDBAtlasODBCType = type function (
     Documentation.Name = "MongoDB Atlas SQL"
 ];
 
-MongoDBAtlasODBCImpl = (mongodbUri as text, database as text, optional query as text, optional options as record) as table =>
+MongoDBAtlasODBCImpl = (mongodbUri as text, database as text, optional options as record) as table =>
     let
         ConnectionString = Diagnostics.LogValue("ConnectionString", GetConnectionString(mongodbUri, database)),
         CredentialConnectionString = GetCredentialConnectionString(),
         Config = Diagnostics.LogValue("BuildOdbcConfig", BuildOdbcConfig()),
-        DataSource =
-            if query <> null then
-                Odbc.Query(ConnectionString, query, [CredentialConnectionString = CredentialConnectionString])
-            else
-                Odbc.DataSource(ConnectionString, Config & [OnError = OnError, CredentialConnectionString = CredentialConnectionString]),
-        TransformColumns =
+        DataSource = Odbc.DataSource(
+            ConnectionString, Config & [OnError = OnError, CredentialConnectionString = CredentialConnectionString]
+        ),
+        ResultsWithTransformedColumns =
             let
-                TransformColumns =
-                    if query <> null then
-                        TransformSqlUnknownColumns(DataSource)
-                    else
-                        TransformColumnKeepType(
-                            DataSource,
-                            "Data",
-                            (tables) => TransformColumnKeepType(tables, "Data", TransformSqlUnknownColumns)
-                        )
+                TransformedColumns = TransformColumnKeepType(
+                    DataSource, "Data", (tables) =>
+                        TransformColumnKeepType(tables, "Data", TransformSqlUnknownColumns)
+                )
             in
-                TransformColumns
+                TransformedColumns
     in
-        TransformColumns;
+        ResultsWithTransformedColumns;
+
+MongoDBAtlasODBCQueryImpl = (mongodbUri as text, database as text,  query as text, optional options as record) as table =>
+    let
+        ConnectionString = Diagnostics.LogValue("ConnectionString", GetConnectionString(mongodbUri, database)),
+        CredentialConnectionString = GetCredentialConnectionString(),
+        Config = Diagnostics.LogValue("BuildOdbcConfig", BuildOdbcConfig()),
+        QueryResults = Odbc.Query(ConnectionString, query, [CredentialConnectionString = CredentialConnectionString]),
+        QueryResultsWithTransformedColumns = TransformSqlUnknownColumns(QueryResults)
+    in
+        QueryResultsWithTransformedColumns;
 
 GetCredentialConnectionString = () as record =>
     let
@@ -172,8 +205,7 @@ MongoDBAtlasODBC = [
             {"MongoDBAtlasODBC.Contents", mongodbUri, database},
     Authentication = [
         UsernamePassword = []
-    ],
-    SupportsEncryption = true
+    ]
 ];
 
 // Data Source UI publishing description
