@@ -149,14 +149,21 @@ functions:
             --eval 'db.runCommand({sqlGenerateSchema: 1, 
             sampleNamespaces: ["integration_test.complex_types", "supplies.sales"], setSchemas: true})' &&
 
-          # Set credentials for the queryFile
+          # Set credentials for the queryFiles
           echo $(eval echo $(cat resources/credentials.json )) | tools/PQTest.exe set-credential \
             --extension MongoDBAtlasODBC.pqx \
-            --queryFile connector/MongoDBAtlasODBC.integration-test.query.pq &&
+            --queryFile connector/MongoDBAtlasODBC.datasource-test.query.pq &&
+          echo $(eval echo $(cat resources/credentials.json )) | tools/PQTest.exe set-credential \
+            --extension MongoDBAtlasODBC.pqx \
+            --queryFile connector/MongoDBAtlasODBC.query-test.query.pq &&
 
-          # Run Integration Test
+          # Run Integration Tests
+          echo -e "\nRunning MongoDBAtlasODBC.datasource-test.query.pq" &&
           test_output=`tools/PQTest.exe run-test --extension MongoDBAtlasODBC.pqx \
-            --queryFile connector/MongoDBAtlasODBC.integration-test.query.pq --prettyPrint`
+            --queryFile connector/MongoDBAtlasODBC.datasource-test.query.pq --prettyPrint` &&
+          echo "Running MongoDBAtlasODBC.query-test.query.pq" &&
+          test_output+=`tools/PQTest.exe run-test --extension MongoDBAtlasODBC.pqx \
+            --queryFile connector/MongoDBAtlasODBC.query-test.query.pq --prettyPrint` 
           EXITCODE=$?
           echo "$test_output"
           failures=`echo "$test_output"  | grep Failure -A 1 || true` 
