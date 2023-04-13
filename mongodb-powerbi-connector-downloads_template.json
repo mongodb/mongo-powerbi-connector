@@ -1,0 +1,6 @@
+{
+  "manual_link": "https://www.mongodb.com/docs/atlas/data-federation/query/query-with-sql/",
+  "release_notes_link": "https://www.mongodb.com/docs/atlas/data-federation/query/sql/release-notes/",
+  "version": "{RELEASE_VERSION}",
+  "download_link": "https://translators-connectors-releases.s3.us-east-1.amazonaws.com/mongo-powerbi-connector/MongoDBAtlasODBC-{RELEASE_VERSION}.pqx"
+}
