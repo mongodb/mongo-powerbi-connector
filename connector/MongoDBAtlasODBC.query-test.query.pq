@@ -3,7 +3,7 @@ section MongoDBAtlasODBCQueryTests;
     uri = "mongodb://localhost/?ssl=false", 
     Query_Sales_Unqualified = Table.FirstN(
       Table.Sort(
-        MongoDBAtlasODBC.Query(uri, "supplies", "select * from sales", []), 
+        MongoDBAtlasODBC.Query(uri, "supplies", "info", "select * from sales", []), 
         {{"_id", Order.Ascending}}
       ), 
       1
@@ -11,6 +11,7 @@ section MongoDBAtlasODBCQueryTests;
     Query_Complex_Types_Qualified = MongoDBAtlasODBC.Query(
       uri, 
       "supplies", 
+      "info",
       "select * from integration_test.complex_types", 
       []
     ), 

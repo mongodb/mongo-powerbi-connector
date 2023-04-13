@@ -1,7 +1,7 @@
 section MongoDBAtlasODBCDataSourceTests;
   shared IntegrationTests = [
     uri = "mongodb://localhost/?ssl=false", 
-    DataSource = MongoDBAtlasODBC.Contents(uri, "supplies", []),
+    DataSource = MongoDBAtlasODBC.Contents(uri, "supplies", "info", []),
     // Sort the sales table, and retain first row
     DataSource_Sales = Table.FirstN(
       Table.Sort(
