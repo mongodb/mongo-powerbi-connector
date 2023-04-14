@@ -18,8 +18,8 @@ shared MongoDBAtlasODBC.Contents = Value.ReplaceType(
 
 [DataSource.Kind = "MongoDBAtlasODBC"]
 shared MongoDBAtlasODBC.Query = Value.ReplaceType(
-    (mongoDbUri, database, query, loglevel, optional options) =>
-        MongoDBAtlasODBCQueryImpl(mongoDbUri, database, query, loglevel, options),
+    (mongoDbUri, database, loglevel, query, optional options) =>
+        MongoDBAtlasODBCQueryImpl(mongoDbUri, database, loglevel, query, options),
     MongoDBAtlasODBCQueryType
 );
 
@@ -108,7 +108,7 @@ MongoDBAtlasODBCImpl = (mongodbUri as text, database as text, loglevel as text, 
         ResultsWithTransformedColumns;
 
 MongoDBAtlasODBCQueryImpl = (
-    mongodbUri as text, database as text, query as text, loglevel as text, optional options as record
+    mongodbUri as text, database as text, loglevel as text, query as text, optional options as record
 ) as table =>
     let
         ConnectionString = Diagnostics.LogValue(
