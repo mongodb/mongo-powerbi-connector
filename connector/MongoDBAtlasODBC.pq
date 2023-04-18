@@ -33,7 +33,7 @@ MongoDBAtlasODBCType = type function (
     optional loglevel as (
         type text meta [
             Documentation.FieldCaption = "Logging Level",
-            Documentation.FieldDescription = "Logging level for the MongoDB Atlas SQL ODBC Driver",
+            Documentation.FieldDescription = "Logging level for the MongoDB Atlas SQL ODBC Driver. Default: INFO",
             Documentation.AllowedValues = {"INFO", "ERROR", "DEBUG"}
         ]
     ),
@@ -69,7 +69,7 @@ MongoDBAtlasODBCQueryType = type function (
     optional loglevel as (
         type text meta [
             Documentation.FieldCaption = "Logging Level",
-            Documentation.FieldDescription = "Logging level for the MongoDB Atlas SQL ODBC Driver",
+            Documentation.FieldDescription = "Logging level for the MongoDB Atlas SQL ODBC Driver. Default: INFO",
             Documentation.AllowedValues = {"INFO", "ERROR", "DEBUG"}
         ]
     ),
@@ -80,9 +80,8 @@ MongoDBAtlasODBCQueryType = type function (
 
 MongoDBAtlasODBCImpl = (mongodbUri as text, database as text, optional loglevel as text, optional options as record) as table =>
     let
-        LogLevel = if loglevel = null then "INFO" else loglevel,
         ConnectionString = Diagnostics.LogValue(
-            "ConnectionString", GetConnectionString(mongodbUri, database, LogLevel)
+            "ConnectionString", GetConnectionString(mongodbUri, database, loglevel)
         ),
         CredentialConnectionString = GetCredentialConnectionString(),
         Config = Diagnostics.LogValue("BuildOdbcConfig", BuildOdbcConfig()),
@@ -104,9 +103,8 @@ MongoDBAtlasODBCQueryImpl = (
     mongodbUri as text, database as text, query as text, optional loglevel as text, optional options as record
 ) as table =>
     let
-        LogLevel = if loglevel = null then "INFO" else loglevel,
         ConnectionString = Diagnostics.LogValue(
-            "ConnectionString", GetConnectionString(mongodbUri, database, LogLevel)
+            "ConnectionString", GetConnectionString(mongodbUri, database, loglevel)
         ),
         CredentialConnectionString = GetCredentialConnectionString(),
         Config = Diagnostics.LogValue("BuildOdbcConfig", BuildOdbcConfig()),
@@ -159,7 +157,7 @@ TransformColumnKeepType = (table, columnName, operation) =>
     in
         Value.ReplaceType(TransformColumn, TableType);
 
-GetConnectionString = (uri as text, database as text, loglevel as text) as record =>
+GetConnectionString = (uri as text, database as text, optional loglevel as text) as record =>
     let
         DatabaseNotSet = (database = ""),
         ConnectionString = [
@@ -167,7 +165,7 @@ GetConnectionString = (uri as text, database as text, loglevel as text) as recor
             DATABASE = database,
             URI = uri,
             APPNAME = "powerbi-connector",
-            LOGLEVEL = loglevel ?? "info"
+            LOGLEVEL = if loglevel = null then "INFO" else loglevel
         ]
     in
         if DatabaseNotSet then
