@@ -10,18 +10,10 @@ EnableTraceOutput = false;
 AtlasSQLLink = "https://www.mongodb.com/atlas/sql";
 
 [DataSource.Kind = "MongoDBAtlasODBC", Publish = "MongoDBAtlasODBC.Publish"]
-shared MongoDBAtlasODBC.Contents = Value.ReplaceType(
-    (mongoDbUri, database, loglevel, optional options) =>
-        MongoDBAtlasODBCImpl(mongoDbUri, database, loglevel, options),
-    MongoDBAtlasODBCType
-);
+shared MongoDBAtlasODBC.Contents = Value.ReplaceType(MongoDBAtlasODBCImpl, MongoDBAtlasODBCType);
 
 [DataSource.Kind = "MongoDBAtlasODBC"]
-shared MongoDBAtlasODBC.Query = Value.ReplaceType(
-    (mongoDbUri, database, loglevel, query, optional options) =>
-        MongoDBAtlasODBCQueryImpl(mongoDbUri, database, loglevel, query, options),
-    MongoDBAtlasODBCQueryType
-);
+shared MongoDBAtlasODBC.Query = Value.ReplaceType(MongoDBAtlasODBCQueryImpl, MongoDBAtlasODBCQueryType);
 
 MongoDBAtlasODBCType = type function (
     mongodbUri as (
@@ -38,7 +30,7 @@ MongoDBAtlasODBCType = type function (
             Documentation.SampleValues = {"db"}
         ]
     ),
-    loglevel as (
+    optional loglevel as (
         type text meta [
             Documentation.FieldCaption = "Logging Level",
             Documentation.FieldDescription = "Logging level for the MongoDB Atlas SQL ODBC Driver",
@@ -65,13 +57,6 @@ MongoDBAtlasODBCQueryType = type function (
             Documentation.SampleValues = {"db"}
         ]
     ),
-    loglevel as (
-        type text meta [
-            Documentation.FieldCaption = "Logging Level",
-            Documentation.FieldDescription = "Logging level for the MongoDB Atlas SQL ODBC Driver",
-            Documentation.AllowedValues = {"INFO", "ERROR", "DEBUG"}
-        ]
-    ),
     query as (
         type text meta [
             DataSource.Path = false,
@@ -81,15 +66,23 @@ MongoDBAtlasODBCQueryType = type function (
             Formatting.IsCode = true
         ]
     ),
+    optional loglevel as (
+        type text meta [
+            Documentation.FieldCaption = "Logging Level",
+            Documentation.FieldDescription = "Logging level for the MongoDB Atlas SQL ODBC Driver",
+            Documentation.AllowedValues = {"INFO", "ERROR", "DEBUG"}
+        ]
+    ),
     optional options as record
 ) as table meta [
     Documentation.Name = "MongoDB Atlas SQL"
 ];
 
-MongoDBAtlasODBCImpl = (mongodbUri as text, database as text, loglevel as text, optional options as record) as table =>
+MongoDBAtlasODBCImpl = (mongodbUri as text, database as text, optional loglevel as text, optional options as record) as table =>
     let
+        LogLevel = if loglevel = null then "INFO" else loglevel,
         ConnectionString = Diagnostics.LogValue(
-            "ConnectionString", GetConnectionString(mongodbUri, database, loglevel)
+            "ConnectionString", GetConnectionString(mongodbUri, database, LogLevel)
         ),
         CredentialConnectionString = GetCredentialConnectionString(),
         Config = Diagnostics.LogValue("BuildOdbcConfig", BuildOdbcConfig()),
@@ -108,11 +101,12 @@ MongoDBAtlasODBCImpl = (mongodbUri as text, database as text, loglevel as text, 
         ResultsWithTransformedColumns;
 
 MongoDBAtlasODBCQueryImpl = (
-    mongodbUri as text, database as text, loglevel as text, query as text, optional options as record
+    mongodbUri as text, database as text, query as text, optional loglevel as text, optional options as record
 ) as table =>
     let
+        LogLevel = if loglevel = null then "INFO" else loglevel,
         ConnectionString = Diagnostics.LogValue(
-            "ConnectionString", GetConnectionString(mongodbUri, database, loglevel)
+            "ConnectionString", GetConnectionString(mongodbUri, database, LogLevel)
         ),
         CredentialConnectionString = GetCredentialConnectionString(),
         Config = Diagnostics.LogValue("BuildOdbcConfig", BuildOdbcConfig()),
