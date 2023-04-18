@@ -34,7 +34,7 @@ MongoDBAtlasODBCType = type function (
         type text meta [
             Documentation.FieldCaption = "Logging Level",
             Documentation.FieldDescription = "Logging level for the MongoDB Atlas SQL ODBC Driver. Default: INFO",
-            Documentation.AllowedValues = {"INFO", "ERROR", "DEBUG"}
+            Documentation.AllowedValues = {"ERROR", "INFO", "DEBUG"}
         ]
     ),
     optional options as record
@@ -70,7 +70,7 @@ MongoDBAtlasODBCQueryType = type function (
         type text meta [
             Documentation.FieldCaption = "Logging Level",
             Documentation.FieldDescription = "Logging level for the MongoDB Atlas SQL ODBC Driver. Default: INFO",
-            Documentation.AllowedValues = {"INFO", "ERROR", "DEBUG"}
+            Documentation.AllowedValues = {"ERROR", "INFO", "DEBUG"}
         ]
     ),
     optional options as record
