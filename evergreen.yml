@@ -319,8 +319,8 @@ functions:
       params:
         aws_key: ${release_aws_key}
         aws_secret: ${release_aws_secret}
-        local_file: mongo-tableau-connector/mongo-tableau-connector-downloads_template.json
-        remote_file: mongo-tableau-connector/mongo-tableau-connector-downloads.json
+        local_file: mongo-tableau-connector/mongo-powerbi-connector-downloads_template.json
+        remote_file: mongo-tableau-connector/mongo-powerbi-connector-downloads.json
         bucket: translators-connectors-releases
         permissions: public-read
         content_type: application/json
