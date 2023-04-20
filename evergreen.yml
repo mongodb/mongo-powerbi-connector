@@ -376,10 +376,6 @@ tasks:
     commands:
       - func: "update download center feed"
 
-  - name: test-download-center-update
-    commands:
-      - func: "update download center feed"
-
 task_groups:
   - name: test-integration-group
     setup_group_can_fail_task: true
@@ -406,4 +402,3 @@ buildvariants:
       - name: release
       - name: test-release
       - name: download-center-update
-      - name: test-download-center-update
