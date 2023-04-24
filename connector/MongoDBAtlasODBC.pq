@@ -1,25 +1,19 @@
 [Version = "0.0.0"]
 section MongoDBAtlasODBC;
 
-// When set to true, additional trace information will be written out to the User log. 
-// This should be set to false before release. Tracing is done through a call to 
-// Diagnostics.LogValue(). When EnableTraceOutput is set to false, the call becomes a 
+// When set to true, additional trace information will be written out to the User log.
+// This should be set to false before release. Tracing is done through a call to
+// Diagnostics.LogValue(). When EnableTraceOutput is set to false, the call becomes a
 // no-op and simply returns the original value.
 EnableTraceOutput = false;
 
-AtlasSQLLink="https://www.mongodb.com/atlas/sql";
+AtlasSQLLink = "https://www.mongodb.com/atlas/sql";
 
 [DataSource.Kind = "MongoDBAtlasODBC", Publish = "MongoDBAtlasODBC.Publish"]
-shared MongoDBAtlasODBC.Contents = Value.ReplaceType(
-    (mongoDbUri, database, optional options) => MongoDBAtlasODBCImpl(mongoDbUri, database, options),
-    MongoDBAtlasODBCType
-);
+shared MongoDBAtlasODBC.Contents = Value.ReplaceType(MongoDBAtlasODBCImpl, MongoDBAtlasODBCType);
 
 [DataSource.Kind = "MongoDBAtlasODBC"]
-shared MongoDBAtlasODBC.Query = Value.ReplaceType(
-    (mongoDbUri, database, query, optional options) => MongoDBAtlasODBCQueryImpl(mongoDbUri, database, query, options),
-    MongoDBAtlasODBCQueryType
-);
+shared MongoDBAtlasODBC.Query = Value.ReplaceType(MongoDBAtlasODBCQueryImpl, MongoDBAtlasODBCQueryType);
 
 MongoDBAtlasODBCType = type function (
     mongodbUri as (
@@ -34,6 +28,13 @@ MongoDBAtlasODBCType = type function (
             Documentation.FieldCaption = "Database",
             Documentation.FieldDescription = "Database to connect to",
             Documentation.SampleValues = {"db"}
+        ]
+    ),
+    optional loglevel as (
+        type text meta [
+            Documentation.FieldCaption = "Logging Level",
+            Documentation.FieldDescription = "Logging level for the MongoDB Atlas SQL ODBC Driver. Default: INFO",
+            Documentation.AllowedValues = {"ERROR", "INFO", "DEBUG"}
         ]
     ),
     optional options as record
@@ -65,14 +66,23 @@ MongoDBAtlasODBCQueryType = type function (
             Formatting.IsCode = true
         ]
     ),
+    optional loglevel as (
+        type text meta [
+            Documentation.FieldCaption = "Logging Level",
+            Documentation.FieldDescription = "Logging level for the MongoDB Atlas SQL ODBC Driver. Default: INFO",
+            Documentation.AllowedValues = {"ERROR", "INFO", "DEBUG"}
+        ]
+    ),
     optional options as record
 ) as table meta [
     Documentation.Name = "MongoDB Atlas SQL"
 ];
 
-MongoDBAtlasODBCImpl = (mongodbUri as text, database as text, optional options as record) as table =>
+MongoDBAtlasODBCImpl = (mongodbUri as text, database as text, optional loglevel as text, optional options as record) as table =>
     let
-        ConnectionString = Diagnostics.LogValue("ConnectionString", GetConnectionString(mongodbUri, database)),
+        ConnectionString = Diagnostics.LogValue(
+            "ConnectionString", GetConnectionString(mongodbUri, database, loglevel)
+        ),
         CredentialConnectionString = GetCredentialConnectionString(),
         Config = Diagnostics.LogValue("BuildOdbcConfig", BuildOdbcConfig()),
         DataSource = Odbc.DataSource(
@@ -89,9 +99,13 @@ MongoDBAtlasODBCImpl = (mongodbUri as text, database as text, optional options a
     in
         ResultsWithTransformedColumns;
 
-MongoDBAtlasODBCQueryImpl = (mongodbUri as text, database as text,  query as text, optional options as record) as table =>
+MongoDBAtlasODBCQueryImpl = (
+    mongodbUri as text, database as text, query as text, optional loglevel as text, optional options as record
+) as table =>
     let
-        ConnectionString = Diagnostics.LogValue("ConnectionString", GetConnectionString(mongodbUri, database)),
+        ConnectionString = Diagnostics.LogValue(
+            "ConnectionString", GetConnectionString(mongodbUri, database, loglevel)
+        ),
         CredentialConnectionString = GetCredentialConnectionString(),
         Config = Diagnostics.LogValue("BuildOdbcConfig", BuildOdbcConfig()),
         QueryResults = Odbc.Query(ConnectionString, query, [CredentialConnectionString = CredentialConnectionString]),
@@ -113,9 +127,12 @@ GetCredentialConnectionString = () as record =>
 TransformSqlUnknownColumns = (table) =>
     let
         Schema = Table.Schema(table),
-        SqlBinaryTypes = Diagnostics.LogValue("TransformSqlUnknownColumns", Table.ToRecords(
-            Table.SelectRows(Schema, each [TypeName] = "Binary.Type" and [NativeTypeName] <> "binData")
-        )),
+        SqlBinaryTypes = Diagnostics.LogValue(
+            "TransformSqlUnknownColumns",
+            Table.ToRecords(
+                Table.SelectRows(Schema, each [TypeName] = "Binary.Type" and [NativeTypeName] <> "binData")
+            )
+        ),
         TransformOperations = List.Accumulate(
             SqlBinaryTypes,
             table,
@@ -140,14 +157,15 @@ TransformColumnKeepType = (table, columnName, operation) =>
     in
         Value.ReplaceType(TransformColumn, TableType);
 
-GetConnectionString = (uri as text, database as text) as record =>
+GetConnectionString = (uri as text, database as text, optional loglevel as text) as record =>
     let
         DatabaseNotSet = (database = ""),
         ConnectionString = [
             DRIVER = "MongoDB Atlas SQL ODBC Driver",
             DATABASE = database,
             URI = uri,
-            APPNAME ="powerbi-connector"
+            APPNAME = "powerbi-connector",
+            LOGLEVEL = if loglevel = null then "INFO" else loglevel
         ]
     in
         if DatabaseNotSet then
@@ -172,20 +190,26 @@ OnError = (errorRecord as record) =>
                 SqlState = ErrRecord[Detail][OdbcErrors][SQLState]?,
                 SqlStateVal = if SqlState = null then "" else Text.Combine({"SQLSTATE: ", Lines.ToText(SqlState)}),
                 NativeError = ErrRecord[Detail][OdbcErrors][NativeError]?,
-                NativeErrorVal = if NativeError = null then "" else Text.Combine({"NativeError: ", Lines.ToText(List.Transform(NativeError, Text.From))})
+                NativeErrorVal =
+                    if NativeError = null then
+                        ""
+                    else
+                        Text.Combine({"NativeError: ", Lines.ToText(List.Transform(NativeError, Text.From))})
             in
-                error "Data source error occurred." 
+                error
+                    "Data source error occurred."
                         & Newline
-                        & SqlStateVal 
-                        & NativeErrorVal 
-                        & "Error message: " 
+                        & SqlStateVal
+                        & NativeErrorVal
+                        & "Error message: "
                         & MessageVal
         else if ReasonVal = DataSourceMissingClientLibrary then
-                    error "Missing client library for datasource" 
-                      & Newline 
-                      & "Visit " 
-                      & Text.From(AtlasSQLLink)
-                      & " for more information."
+            error
+                "Missing client library for datasource"
+                    & Newline
+                    & "Visit "
+                    & Text.From(AtlasSQLLink)
+                    & " for more information."
         else if ReasonVal = ExtensionCredentialError then
             error "Credential error occurred." & Newline & MessageVal
         else
@@ -198,8 +222,8 @@ MongoDBAtlasODBC = [
     TestConnection = (dataSourcePath) =>
         let
             dataSourcePathVal = Diagnostics.LogValue("TestConnection dataSourcePath", dataSourcePath),
-            json = Json.Document(dataSourcePathVal), 
-            mongodbUri = json[mongodbUri], 
+            json = Json.Document(dataSourcePathVal),
+            mongodbUri = json[mongodbUri],
             database = json[database]
         in
             {"MongoDBAtlasODBC.Contents", mongodbUri, database},
@@ -259,16 +283,16 @@ BuildOdbcConfig = () as record =>
     in
         Config;
 
-// 
+//
 // Load common library functions
-// 
+//
 Extension.LoadFunction = (name as text) =>
     let
-        binary = Extension.Contents(name),
-        asText = Text.FromBinary(binary)
+        binary = Extension.Contents(name), asText = Text.FromBinary(binary)
     in
         Expression.Evaluate(asText, #shared);
 
 // Diagnostics module contains multiple functions. We can take the ones we need.
 Diagnostics = Extension.LoadFunction("Diagnostics.pqm");
+
 Diagnostics.LogValue = if (EnableTraceOutput) then Diagnostics[LogValue] else (prefix, value) => value;
