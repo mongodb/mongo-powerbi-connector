@@ -189,8 +189,8 @@ functions:
         working_dir: mongo-powerbi-connector
         script: |
           ${prepare_shell}
-          curl -O https://translators-connectors-releases.s3.us-east-1.amazonaws.com/mongosql-odbc-driver/windows/snapshot/release/mongoodbc.dll
-          chmod 777 ./mongoodbc.dll
+          curl -O https://translators-connectors-releases.s3.amazonaws.com/mongosql-odbc-driver/windows/snapshot/release/atsql.dll
+          chmod 777 ./atsql.dll
           sed -i 's@%DRIVER_DLL_PATH%@'"$(echo "$(cygpath -w $(pwd))" | sed s',\\,\\\\\\\\,g')"'@' resources/odbc/setupDSN.reg
           reg import "resources\odbc\setupDSN.reg"
           echo "----- Registry entries after setup ----"
