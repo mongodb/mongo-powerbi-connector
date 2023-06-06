@@ -1,8 +1,7 @@
 # MongoDB Atlas SQL interface
 
-> [!Note] The following connector article is provided by MongoDB, the owner of this connector and a member of the 
-> Microsoft Power Query Connector Certification Program. If you have questions regarding the content of this article or 
-> have changes you would like to see made to this article, visit the MongoDB website and use the support channels there.
+> [!Note]
+> The following connector article is provided by MongoDB, the owner of this connector and a member of the Microsoft Power Query Connector Certification Program. If you have questions regarding the content of this article or have changes you would like to see made to this article, visit the MongoDB website and use the support channels there.
 
 ## Summary
 
@@ -16,8 +15,7 @@
 To use the MongoDB Atlas SQL connector, you must have an 
 [Atlas federated database](https://www.mongodb.com/docs/atlas/data-federation/) setup.
 > [!NOTE]
-> If some or all of your data comes from an Atlas cluster, you must use MongoDB version 5.0 or greater for that cluster 
-> to take advantage of Atlas SQL.
+> If some or all of your data comes from an Atlas cluster, you must use MongoDB version 5.0 or greater for that cluster to take advantage of Atlas SQL.
 
 We also recommend to install the MongoDB Atlas SQL ODBC Driver before using the MongoDB Atlas SQL connector.
 
@@ -33,7 +31,7 @@ To connect using the Atlas SQL interface :
    - Navigate to your federated database instance. In Atlas, select **Data Federation** from the left navigation panel.
    - Click **Connect** to open the federated database instance connection modal.
    - Select **Connect using the Atlas SQL Interface**.
-   - Select **PowerBI Desktop**.
+   - Select **Power BI Connector**.
    - Copy your federated database name and MongoDB URI. You'll need them in a later step.
 
 2. Select **Get Data** from the **Home** ribbon in Power BI Desktop.
@@ -50,15 +48,12 @@ To connect using the Atlas SQL interface :
      Use the MongoDB URI you obtained in step 1.  Make sure that it does not contain your username and password. URIs containing username and/or passwords will be rejected.
    -  Your federated **Database** name. _Required_  
       Use the name of the federated database you obtained in step 1.
-   - A **SQL statement**.  _Optional_
+   - **Logging Level**.  _Optional, Default value: INFO_
    
    Select **Continue**. 
 6. Enter your Atlas MongoDB Database access username and password and select **Connect**.
-   > [!NOTE]
-   > Once you enter your username and password for a particular Atlas federated database, Power BI Desktop uses those 
-   > same credentials in subsequent connection attempts. You can modify those credentials by going to **File > Options 
-   > and settings > Data source settings**.  
-   > More information: [Change the authentication method](../connector-authentication.md#change-the-authentication-method)
+> [!NOTE]
+> Once you enter your username and password for a particular Atlas federated database, Power BI Desktop uses those same credentials in subsequent connection attempts. You can modify those credentials by going to **File > Options and settings > Data source settings**. 
 
 7. In **Navigator**, select one or multiple elements to import and use in Power BI Desktop. 
    Then select either **Load** to load the table in Power BI Desktop, or **Transform Data** to open the Power Query 
@@ -74,6 +69,7 @@ Start by checking your credentials and that you have no network issues accessing
 ## Next steps
 
 You may also find the following information useful:
+* [Query with Atlas SQL](https://www.mongodb.com/docs/atlas/data-federation/query/query-with-sql/)
 * [Set Up and Query Data Federation](https://www.mongodb.com/docs/atlas/data-federation/)
 * [Schema Management](https://www.mongodb.com/docs/atlas/data-federation/query/sql/schema-management/)
 * [SQL Reference](https://www.mongodb.com/docs/atlas/data-federation/query/sql/reference/)
