@@ -5,7 +5,7 @@ section MongoDBAtlasODBC;
 // This should be set to false before release. Tracing is done through a call to
 // Diagnostics.LogValue(). When EnableTraceOutput is set to false, the call becomes a
 // no-op and simply returns the original value.
-EnableTraceOutput = false;
+EnableTraceOutput = true;
 
 AtlasSQLLink = "https://www.mongodb.com/atlas/sql";
 
@@ -142,7 +142,7 @@ TransformSqlUnknownColumns = (table) =>
                     PreservedFacetFields = {"NativeTypeName", "NativeDefaultExpression", "NativeExpression"},
                     Facets = Record.SelectFields(Type.Facets(ColumnType), PreservedFacetFields),
                     TypeWithFacets = Type.ReplaceFacets(type nullable text, Facets),
-                    ToNullableText = (value) => if value = null then null else Text.FromBinary(value),
+                    ToNullableText = (value) => value, //if value = null then null else Text.FromBinary(value),
                     TransformColumn = Table.TransformColumns(state, {column[Name], ToNullableText, TypeWithFacets})
                 in
                     TransformColumn
@@ -240,7 +240,7 @@ MongoDBAtlasODBC.Publish = [
     LearnMoreUrl = AtlasSQLLink,
     SourceTypeImage = MongoDBAtlasODBC.Icons,
     // SQL-399: Add DirectQuery mode support
-    SupportsDirectQuery = false
+    SupportsDirectQuery = true
 ];
 
 MongoDBAtlasODBC.Icons = [
