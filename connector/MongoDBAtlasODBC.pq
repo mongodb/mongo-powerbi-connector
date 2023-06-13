@@ -1,4 +1,4 @@
-[Version = "0.0.0"]
+[Version = "1.0.0"]
 section MongoDBAtlasODBC;
 
 // When set to true, additional trace information will be written out to the User log.
@@ -87,17 +87,19 @@ MongoDBAtlasODBCImpl = (mongodbUri as text, database as text, optional loglevel 
         Config = Diagnostics.LogValue("BuildOdbcConfig", BuildOdbcConfig()),
         DataSource = Odbc.DataSource(
             ConnectionString, Config & [OnError = OnError, CredentialConnectionString = CredentialConnectionString]
-        ),
-        ResultsWithTransformedColumns =
-            let
-                TransformedColumns = TransformColumnKeepType(
-                    DataSource, "Data", (tables) =>
-                        TransformColumnKeepType(tables, "Data", TransformSqlUnknownColumns)
-                )
-            in
-                TransformedColumns
+        )
+        //     ResultsWithTransformedColumns =
+        //         let
+        //             TransformedColumns = TransformColumnKeepType(
+        //                 DataSource, "Data", (tables) =>
+        //                     TransformColumnKeepType(tables, "Data", TransformSqlUnknownColumns)
+        //             )
+        //         in
+        //             TransformedColumns
+        // in
+        //     ResultsWithTransformedColumns;
     in
-        ResultsWithTransformedColumns;
+        DataSource;
 
 MongoDBAtlasODBCQueryImpl = (
     mongodbUri as text, database as text, query as text, optional loglevel as text, optional options as record
@@ -142,7 +144,8 @@ TransformSqlUnknownColumns = (table) =>
                     PreservedFacetFields = {"NativeTypeName", "NativeDefaultExpression", "NativeExpression"},
                     Facets = Record.SelectFields(Type.Facets(ColumnType), PreservedFacetFields),
                     TypeWithFacets = Type.ReplaceFacets(type nullable text, Facets),
-                    ToNullableText = (value) => value, //if value = null then null else Text.FromBinary(value),
+                    ToNullableText = (value) => value,
+                    //if value = null then null else Text.FromBinary(value),
                     TransformColumn = Table.TransformColumns(state, {column[Name], ToNullableText, TypeWithFacets})
                 in
                     TransformColumn
@@ -240,7 +243,21 @@ MongoDBAtlasODBC.Publish = [
     LearnMoreUrl = AtlasSQLLink,
     SourceTypeImage = MongoDBAtlasODBC.Icons,
     // SQL-399: Add DirectQuery mode support
-    SupportsDirectQuery = true
+    SupportsDirectQuery = true,
+    NativeQueryProperties = [
+        navigationSteps = {
+            [
+                indices = {[
+                    value = "database",
+                    indexName = "Name"
+                ], [
+                    displayName = "Database",
+                    indexName = "Kind"
+                ]},
+                access = "Data"
+            ]
+        }
+    ]
 ];
 
 MongoDBAtlasODBC.Icons = [
@@ -270,7 +287,8 @@ BuildOdbcConfig = () as record =>
                 SupportsStringLiterals = true,
                 SupportsOdbcDateLiterals = true,
                 SupportsOdbcTimeLiterals = true,
-                SupportsOdbcTimestampLiterals = true
+                SupportsOdbcTimestampLiterals = true,
+                Sql92Translation = "PassThrough"
             ],
             SQLGetFunctions = [
                 SQL_API_SQLBINDPARAMETER = false,
