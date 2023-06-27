@@ -52,8 +52,8 @@ To connect using the Atlas SQL interface:
      Use the MongoDB URI obtained [in the prerequisites](#obtaining-connection-information-for-your-federated-database-instance).  Make sure that it doesn't contain your username and password. URIs containing username and/or passwords are rejected.
    - Your federated **Database** name. _Required_  
      Use the name of the federated database obtained [in the prerequisites](#obtaining-connection-information-for-your-federated-database-instance).
-   - The logging level for the underlying ODBC driver.  
-   If you need more information in order to troubleshoot, you can increase the logging level. Please note that increasing the logging level will make the driver slower. Only use the DEBUG level while troubleshooting issues.
+   - The logging level for the underlying ODBC driver. _Optional, Default value: INFO_  
+   If you need more information in order to troubleshoot an issue, you can increase the logging level. Please note that increasing the logging level will make the driver slower. Only use the DEBUG level while troubleshooting issues.
 
    
    Select **OK**.  
@@ -82,11 +82,15 @@ To connect using the Atlas SQL interface:
       Use the MongoDB URI obtained [in the prerequisites](#obtaining-connection-information-for-your-federated-database-instance).  Make sure that it doesn't contain your username and password. URIs containing username and/or passwords are rejected.
     - Your federated **Database** name. _Required_  
       Use the name of the federated database obtained [in the prerequisites](#obtaining-connection-information-for-your-federated-database-instance).
+   - The logging level for the underlying ODBC driver. _Optional, Default value: INFO_  
+      If you need more information in order to troubleshoot an issue, you can increase the logging level. 
+      Please note that increasing the logging level will make the driver slower.
+      Only use the DEBUG level while troubleshooting issues.
     - Enter a **Connection name**.
     - Choose a **Data gateway**.
     - Enter your Atlas MongoDB Database access username and password and select **Next**.
 
-   ![Connection Settings](./media/mongodb/mongodb_connect_to_data_source.png)
+   [//]: # (![Connection Settings](./media/mongodb/mongodb_connect_to_data_source.png)
 
 3. In the **Navigator** screen, select the data you require, and then select **Transform data**. This selection opens the Power Query editor so that you can filter and refine the set of data you want to use.  
 
