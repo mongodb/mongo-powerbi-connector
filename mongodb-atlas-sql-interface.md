@@ -25,7 +25,7 @@ To use the MongoDB Atlas SQL connector, you must have an [Atlas federated databa
 > [!NOTE]
 > If some or all of your data comes from an Atlas cluster, you must use MongoDB version 5.0 or greater for that cluster to take advantage of Atlas SQL.
 
-We also recommend that you install the MongoDB Atlas SQL ODBC Driver before using the MongoDB Atlas SQL connector.
+The [MongoDB Atlas SQL ODBC Driver](https://www.mongodb.com/try/download/odbc-driver) is required to use the MongoDB Atlas SQL Connector.
 
 ## Capabilities Supported
 
