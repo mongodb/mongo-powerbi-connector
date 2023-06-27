@@ -94,7 +94,7 @@ To connect using the Atlas SQL interface:
 
 ## Troubleshooting
 
-When the connection can't be established successfully, the generic error message 
+When a connection can't be established, the generic error message 
 `The driver returned invalid (or failed to return) SQL_DRIVER_ODBC_VER: 03.80` is displayed.
 Start by checking your credentials and that you have no network issues accessing your federated database.
 
