@@ -1,4 +1,3 @@
-[Version = "1.0.0"]
 section MongoDBAtlasODBC;
 
 // When set to true, additional trace information will be written out to the User log.
@@ -12,8 +11,7 @@ AtlasSQLLink = "https://www.mongodb.com/atlas/sql";
 [DataSource.Kind = "MongoDBAtlasODBC", Publish = "MongoDBAtlasODBC.Publish"]
 shared MongoDBAtlasODBC.Contents = Value.ReplaceType(MongoDBAtlasODBCImpl, MongoDBAtlasODBCType);
 
-[DataSource.Kind = "MongoDBAtlasODBC"]
-shared MongoDBAtlasODBC.Query = Value.ReplaceType(MongoDBAtlasODBCQueryImpl, MongoDBAtlasODBCQueryType);
+Version = "1.0.0";
 
 MongoDBAtlasODBCType = type function (
     mongodbUri as (
@@ -42,42 +40,6 @@ MongoDBAtlasODBCType = type function (
     Documentation.Name = "MongoDB Atlas SQL"
 ];
 
-MongoDBAtlasODBCQueryType = type function (
-    mongodbUri as (
-        type text meta [
-            Documentation.FieldCaption = "MongoDB URI",
-            Documentation.FieldDescription = "MongoDB connection URI",
-            Documentation.SampleValues = {"mongodb://hostname:port/?ssl=true&authSource=admin"}
-        ]
-    ),
-    database as (
-        type text meta [
-            Documentation.FieldCaption = "Database",
-            Documentation.FieldDescription = "Database to connect to",
-            Documentation.SampleValues = {"db"}
-        ]
-    ),
-    query as (
-        type text meta [
-            DataSource.Path = false,
-            Documentation.FieldCaption = "SQL Statement",
-            Documentation.SampleValues = {"SELECT * FROM table"},
-            Formatting.IsMultiLine = true,
-            Formatting.IsCode = true
-        ]
-    ),
-    optional loglevel as (
-        type text meta [
-            Documentation.FieldCaption = "Logging Level",
-            Documentation.FieldDescription = "Logging level for the MongoDB Atlas SQL ODBC Driver. Default: INFO",
-            Documentation.AllowedValues = {"ERROR", "INFO", "DEBUG"}
-        ]
-    ),
-    optional options as record
-) as table meta [
-    Documentation.Name = "MongoDB Atlas SQL"
-];
-
 MongoDBAtlasODBCImpl = (mongodbUri as text, database as text, optional loglevel as text, optional options as record) as table =>
     let
         ConnectionString = Diagnostics.LogValue(
@@ -88,16 +50,6 @@ MongoDBAtlasODBCImpl = (mongodbUri as text, database as text, optional loglevel 
         DataSource = Odbc.DataSource(
             ConnectionString, Config & [OnError = OnError, CredentialConnectionString = CredentialConnectionString]
         )
-        //     ResultsWithTransformedColumns =
-        //         let
-        //             TransformedColumns = TransformColumnKeepType(
-        //                 DataSource, "Data", (tables) =>
-        //                     TransformColumnKeepType(tables, "Data", TransformSqlUnknownColumns)
-        //             )
-        //         in
-        //             TransformedColumns
-        // in
-        //     ResultsWithTransformedColumns;
     in
         DataSource;
 
@@ -111,7 +63,7 @@ MongoDBAtlasODBCQueryImpl = (
         CredentialConnectionString = GetCredentialConnectionString(),
         Config = Diagnostics.LogValue("BuildOdbcConfig", BuildOdbcConfig()),
         QueryResults = Odbc.Query(ConnectionString, query, [CredentialConnectionString = CredentialConnectionString]),
-        QueryResultsWithTransformedColumns = TransformSqlUnknownColumns(QueryResults)
+        QueryResultsWithTransformedColumns = QueryResults
     in
         QueryResultsWithTransformedColumns;
 
@@ -125,41 +77,6 @@ GetCredentialConnectionString = () as record =>
     in
         CredentialConnectionString;
 
-// Transforms the columns that the driver specifies as SQL_UNKNOWN_TYPE from binary to text values
-TransformSqlUnknownColumns = (table) =>
-    let
-        Schema = Table.Schema(table),
-        SqlBinaryTypes = Diagnostics.LogValue(
-            "TransformSqlUnknownColumns",
-            Table.ToRecords(
-                Table.SelectRows(Schema, each [TypeName] = "Binary.Type" and [NativeTypeName] <> "binData")
-            )
-        ),
-        TransformOperations = List.Accumulate(
-            SqlBinaryTypes,
-            table,
-            (state, column) =>
-                let
-                    ColumnType = Type.TableColumn(Value.Type(table), column[Name]),
-                    PreservedFacetFields = {"NativeTypeName", "NativeDefaultExpression", "NativeExpression"},
-                    Facets = Record.SelectFields(Type.Facets(ColumnType), PreservedFacetFields),
-                    TypeWithFacets = Type.ReplaceFacets(type nullable text, Facets),
-                    ToNullableText = (value) => value,
-                    //if value = null then null else Text.FromBinary(value),
-                    TransformColumn = Table.TransformColumns(state, {column[Name], ToNullableText, TypeWithFacets})
-                in
-                    TransformColumn
-        )
-    in
-        TransformOperations;
-
-// Executes operation on specified columnName of the passed in table
-TransformColumnKeepType = (table, columnName, operation) =>
-    let
-        TableType = Value.Type(table), TransformColumn = Table.TransformColumns(table, {columnName, operation})
-    in
-        Value.ReplaceType(TransformColumn, TableType);
-
 GetConnectionString = (uri as text, database as text, optional loglevel as text) as record =>
     let
         DatabaseNotSet = (database = ""),
@@ -168,7 +85,8 @@ GetConnectionString = (uri as text, database as text, optional loglevel as text)
             DATABASE = database,
             URI = uri,
             APPNAME = "powerbi-connector",
-            LOGLEVEL = if loglevel = null then "INFO" else loglevel
+            LOGLEVEL = if loglevel = null then "INFO" else loglevel,
+            SIMPLE_TYPES_ONLY = 1
         ]
     in
         if DatabaseNotSet then
@@ -243,7 +161,7 @@ MongoDBAtlasODBC.Publish = [
     LearnMoreUrl = AtlasSQLLink,
     SourceTypeImage = MongoDBAtlasODBC.Icons,
     // SQL-399: Add DirectQuery mode support
-    SupportsDirectQuery = true,
+    SupportsDirectQuery = false,
     NativeQueryProperties = [
         navigationSteps = {
             [
@@ -256,7 +174,10 @@ MongoDBAtlasODBC.Publish = [
                 ]},
                 access = "Data"
             ]
-        }
+        },
+        nativeQueryOptions = [
+            EnableFolding = false
+        ]
     ]
 ];
 
