@@ -53,20 +53,6 @@ MongoDBAtlasODBCImpl = (mongodbUri as text, database as text, optional loglevel 
     in
         DataSource;
 
-MongoDBAtlasODBCQueryImpl = (
-    mongodbUri as text, database as text, query as text, optional loglevel as text, optional options as record
-) as table =>
-    let
-        ConnectionString = Diagnostics.LogValue(
-            "ConnectionString", GetConnectionString(mongodbUri, database, loglevel)
-        ),
-        CredentialConnectionString = GetCredentialConnectionString(),
-        Config = Diagnostics.LogValue("BuildOdbcConfig", BuildOdbcConfig()),
-        QueryResults = Odbc.Query(ConnectionString, query, [CredentialConnectionString = CredentialConnectionString]),
-        QueryResultsWithTransformedColumns = QueryResults
-    in
-        QueryResultsWithTransformedColumns;
-
 GetCredentialConnectionString = () as record =>
     let
         Credential = Extension.CurrentCredential(),
