@@ -9,7 +9,7 @@ shared IntegrationTests = [
         1
     ),
     Query_Complex_Types_Qualified = Value.NativeQuery(
-        MongoDBAtlasODBC.Query( uri, "supplies",  "info", []) {[Name="supplies", Kind="database"]}, "select * from integration_test.complex_types", null, [EnableFolding=false]),
+        MongoDBAtlasODBC.Contents( uri, "supplies",  "info", []) {[Name="supplies", Kind="database"]}, "select * from integration_test.complex_types", null, [EnableFolding=false]),
     Sales_Row = {
         [
             _id = "{""$oid"":""5bd761dcae323e45a93ccfeb""}",
