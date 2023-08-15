@@ -1,3 +1,4 @@
+[Version = "0.0.0"]
 section MongoDBAtlasODBC;
 
 // When set to true, additional trace information will be written out to the User log.
@@ -5,7 +6,6 @@ section MongoDBAtlasODBC;
 // Diagnostics.LogValue(). When EnableTraceOutput is set to false, the call becomes a
 // no-op and simply returns the original value.
 EnableTraceOutput = false;
-Version = "0.0.0";
 AtlasSQLLink = "https://www.mongodb.com/atlas/sql";
 
 [DataSource.Kind = "MongoDBAtlasODBC", Publish = "MongoDBAtlasODBC.Publish"]
@@ -163,7 +163,7 @@ GetConnectionString = (uri as text, database as text, optional loglevel as text)
             DRIVER = "MongoDB Atlas SQL ODBC Driver",
             DATABASE = database,
             URI = uri,
-            APPNAME = Text.Format("powerbi-connector+#{0}", {Version}),
+            APPNAME = "powerbi-connector+<connector-version>",
             LOGLEVEL = if loglevel = null then "INFO" else loglevel
         ]
     in
