@@ -5,7 +5,6 @@ section MongoDBAtlasODBC;
 // Diagnostics.LogValue(). When EnableTraceOutput is set to false, the call becomes a
 // no-op and simply returns the original value.
 EnableTraceOutput = false;
-
 AtlasSQLLink = "https://www.mongodb.com/atlas/sql";
 
 [DataSource.Kind = "MongoDBAtlasODBC", Publish = "MongoDBAtlasODBC.Publish"]
@@ -70,9 +69,8 @@ GetConnectionString = (uri as text, database as text, optional loglevel as text)
             DRIVER = "MongoDB Atlas SQL ODBC Driver",
             DATABASE = database,
             URI = uri,
-            APPNAME = "powerbi-connector",
-            LOGLEVEL = if loglevel = null then "INFO" else loglevel,
-            SIMPLE_TYPES_ONLY = 1
+            APPNAME = "powerbi-connector+<connector-version>",
+            LOGLEVEL = if loglevel = null then "INFO" else loglevel
         ]
     in
         if DatabaseNotSet then

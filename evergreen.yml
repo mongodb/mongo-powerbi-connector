@@ -32,6 +32,8 @@ functions:
           if $UPDATE_PLUGIN_VERSION; then
             sed -i "s/\[Version = \"0.0.0\"\]/\[Version = \"${RELEASE_VERSION}\"\]/g" \
               connector/MongoDBAtlasODBC.pq
+            sed -i "s/<connector-version>/${RELEASE_VERSION}/g" \
+              connector/MongoDBAtlasODBC.pq
           fi
           tools/MakePQX.exe compile connector/
           tools/MakePQX.exe pack -mz connector/bin/AnyCPU/Debug/connector.mez -t MongoDBAtlasODBC.pqx
