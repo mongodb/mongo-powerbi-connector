@@ -13,9 +13,9 @@ The following query is sufficient to test Native Query as it exercises mutliple 
 2. Build the connector. The easiest way to do this is in VSCode, using the Power Query SDk.
 - Navigate to the `connector` directory.
 - `code .` to open the project in VSCode.
-- Open `MongoDBAtlasODC.pq`
-- Right click, and choose *Evaluate current power query file*
-- Copy `bin\AnyCPU\Debug\connector.mez` to the Microsoft Power BI custom connector folder, located in `C:\Users\<username>\Documents\Microsoft Power BI Desktop\Custom Connectors`.
+- Open `MongoDBAtlasODBC.pq`
+- On the editor window, right click anywhere in the editor window for the `MongoDBAtlasODBC.pq` file and choose *Evaluate current power query file*
+- Copy `bin\AnyCPU\Debug\connector.mez` to the Microsoft Power BI custom connector folder, located in `C:\Users\<username>\Documents\Power BI Desktop\Custom Connectors`.
 
 3. Start Power BI.
 4. Choose *Get Data*

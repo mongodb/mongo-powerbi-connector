@@ -1,3 +1,4 @@
+[Version = "1.0.0"]
 section MongoDBAtlasODBC;
 
 // When set to true, additional trace information will be written out to the User log.
@@ -9,8 +10,6 @@ AtlasSQLLink = "https://www.mongodb.com/atlas/sql";
 
 [DataSource.Kind = "MongoDBAtlasODBC", Publish = "MongoDBAtlasODBC.Publish"]
 shared MongoDBAtlasODBC.Contents = Value.ReplaceType(MongoDBAtlasODBCImpl, MongoDBAtlasODBCType);
-
-Version = "1.0.0";
 
 MongoDBAtlasODBCType = type function (
     mongodbUri as (
