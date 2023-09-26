@@ -5,7 +5,7 @@ At this time, Native Query must be tested manually by reviewers.
 The following query is sufficient to test Native Query as it exercises mutliple areas of translation.
 
 1. Ensure you have a local ADF running.
-- Navigate to the `mongo-odbc-driver` repository locally.
+- Navigate to the `mongo-powerbi-connector` repository locally.
 - Run the ADF script via `./resources/run_adf start`
 - Load data
   - If you have `mongoimport.exe` already installed, you can skip the downloading it. Otherwise
@@ -25,7 +25,6 @@ The following query is sufficient to test Native Query as it exercises mutliple 
     # Replace with the namespace you are adding
     $MONGOSH  -u mhuser -p pencil --eval 'db.runCommand({sqlGenerateSchema: 1, sampleNamespaces: ["supplies.sales"], setSchemas: true})' localhost/admin
     ```
-- Navigate back to the `mongo-powerbi-connector` repository.
 
 2. Build the connector. The easiest way to do this is in VSCode, using the Power Query SDk.
 - Navigate to the `connector` directory.
@@ -52,7 +51,7 @@ The following query is sufficient to test Native Query as it exercises mutliple 
 
 7. Verify results. Numerics will display with higher precision in Power BI.
 
-| name | sale |
+| name | revenue_per_sale |
 | ---- | ---- |
 | notepad | 66.337 |
 | printer paper | 164.544 |
