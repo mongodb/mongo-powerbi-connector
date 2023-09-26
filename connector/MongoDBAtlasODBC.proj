@@ -8,6 +8,7 @@
   </PropertyGroup>
   <ItemGroup>
     <MezContent Include="MongoDBAtlasODBC.pq" />
+    <MezContent Include="Diagnostics.pqm" />
     <MezContent Include="MongoDBAtlasODBC16.png" />
     <MezContent Include="MongoDBAtlasODBC20.png" />
     <MezContent Include="MongoDBAtlasODBC24.png" />

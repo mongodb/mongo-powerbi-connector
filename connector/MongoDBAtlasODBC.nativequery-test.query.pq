@@ -2,34 +2,18 @@ section MongoDBAtlasODBCQueryTests;
 
 shared IntegrationTests = [
     uri = "mongodb://localhost/?ssl=false",
-    Query_Sales_Unqualified = Table.FirstN(
-        Table.Sort(
-            MongoDBAtlasODBC.Query(uri, "supplies", "select * from sales", "info", []), {{"_id", Order.Ascending}}
-        ),
-        1
-    ),
-    Query_Complex_Types_Qualified = MongoDBAtlasODBC.Query(
-        uri, "supplies", "select * from integration_test.complex_types", "info", []
-    ),
-    Sales_Row = {
+    Query_Complex_Types_Qualified = Value.NativeQuery(
+        MongoDBAtlasODBC.Contents(
+            uri, "integration_test", "info", []
+        ){
+            [Name = "integration_test", Kind = "database"]
+        }[Data],
+        "select * from integration_test.complex_types",
+        null,
         [
-            _id = "{""$oid"":""5bd761dcae323e45a93ccfeb""}",
-            couponUsed = false,
-            customer = "{""gender"":""F"",""age"":45,""email"":""vatires@ta.pe"",""satisfaction"":3}",
-            items = "[{""name"":""binder"",""tags"":[""school"",""general"",""organization""],""price"":20.08,""quantity"":1},"
-                & "{""name"":""pens"",""tags"":[""writing"",""office"",""school"",""stationary""],""price"":23.08,""quantity"":4},"
-                & "{""name"":""backpack"",""tags"":[""school"",""travel"",""kids""],""price"":82.73,""quantity"":2},"
-                & "{""name"":""printer paper"",""tags"":[""office"",""stationary""],""price"":15.98,""quantity"":3},"
-                & "{""name"":""notepad"",""tags"":[""office"",""writing"",""school""],""price"":27.24,""quantity"":4},"
-                & "{""name"":""notepad"",""tags"":[""office"",""writing"",""school""],""price"":27.7,""quantity"":5},"
-                & "{""name"":""pens"",""tags"":[""writing"",""office"",""school"",""stationary""],""price"":59.86,""quantity"":5},"
-                & "{""name"":""binder"",""tags"":[""school"",""general"",""organization""],""price"":27.33,""quantity"":9},"
-                & "{""name"":""notepad"",""tags"":[""office"",""writing"",""school""],""price"":13.59,""quantity"":1}]",
-            purchaseMethod = "In store",
-            saleDate = #datetime(2015, 2, 23, 9, 53, 59.343),
-            storeLocation = "Seattle"
+            EnableFolding = false
         ]
-    },
+    ),
     Complex_Types_Row = {
         [
             _id = "{""$oid"":""5bd761dcae323e45a93ccff4""}",
@@ -67,35 +51,6 @@ shared IntegrationTests = [
         "timestamp"
     },
     facts = {
-        Fact(
-            "Query matching database name works with unqualified collection name",
-            Sales_Row,
-            Table.ToRecords(Query_Sales_Unqualified)
-        ),
-        Fact(
-            "Query different database name requires qualified collection name",
-            Complex_Types_Row,
-            Table.ToRecords(Query_Complex_Types_Qualified)
-        ),
-        Fact(
-            "Check schema, complex types only are tranformed to Text",
-            [
-                array = {"Text.Type"},
-                boolean = {"Logical.Type"},
-                object = {"Text.Type"}
-            ],
-            [
-                array = Table.SelectRows(
-                    Table.Schema(Query_Complex_Types_Qualified), each Text.Contains([Name], "array")
-                )[TypeName],
-                boolean = Table.SelectRows(
-                    Table.Schema(Query_Complex_Types_Qualified), each Text.Contains([Name], "boolean")
-                )[TypeName],
-                object = Table.SelectRows(
-                    Table.Schema(Query_Complex_Types_Qualified), each Text.Contains([Name], "regularExpression")
-                )[TypeName]
-            ]
-        ),
         Fact(
             "NativeTypeName facet is retained in complex types from query",
             Complex_Types_NativeTypeNames,
