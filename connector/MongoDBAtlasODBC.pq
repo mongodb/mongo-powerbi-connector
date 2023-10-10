@@ -26,23 +26,14 @@ MongoDBAtlasODBCType = type function (
             Documentation.SampleValues = {"db"}
         ]
     ),
-    optional loglevel as (
-        type text meta [
-            Documentation.FieldCaption = "Logging Level",
-            Documentation.FieldDescription = "Logging level for the MongoDB Atlas SQL ODBC Driver. Default: INFO",
-            Documentation.AllowedValues = {"ERROR", "INFO", "DEBUG"}
-        ]
-    ),
     optional options as record
 ) as table meta [
     Documentation.Name = "MongoDB Atlas SQL"
 ];
 
-MongoDBAtlasODBCImpl = (mongodbUri as text, database as text, optional loglevel as text, optional options as record) as table =>
+MongoDBAtlasODBCImpl = (mongodbUri as text, database as text, optional options as record) as table =>
     let
-        ConnectionString = Diagnostics.LogValue(
-            "ConnectionString", GetConnectionString(mongodbUri, database, loglevel)
-        ),
+        ConnectionString = Diagnostics.LogValue("ConnectionString", GetConnectionString(mongodbUri, database)),
         CredentialConnectionString = GetCredentialConnectionString(),
         Config = Diagnostics.LogValue("BuildOdbcConfig", BuildOdbcConfig()),
         DataSource = Odbc.DataSource(
@@ -61,15 +52,14 @@ GetCredentialConnectionString = () as record =>
     in
         CredentialConnectionString;
 
-GetConnectionString = (uri as text, database as text, optional loglevel as text) as record =>
+GetConnectionString = (uri as text, database as text) as record =>
     let
         DatabaseNotSet = (database = ""),
         ConnectionString = [
             DRIVER = "MongoDB Atlas SQL ODBC Driver",
             DATABASE = database,
             URI = uri,
-            APPNAME = "powerbi-connector+<connector-version>",
-            LOGLEVEL = if loglevel = null then "INFO" else loglevel
+            APPNAME = "powerbi-connector+<connector-version>"
         ]
     in
         if DatabaseNotSet then
