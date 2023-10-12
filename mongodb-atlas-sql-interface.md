@@ -48,17 +48,20 @@ To connect using the Atlas SQL interface:
 
 4. In the MongoDB Atlas SQL window that appears, fill in the following values:
 
-   - The **MongoDB URI**. _Required_.   
+   - The **MongoDB URI**. _Required_ \
      Use the MongoDB URI obtained [in the prerequisites](#obtaining-connection-information-for-your-federated-database-instance).  Make sure that it doesn't contain your username and password. URIs containing username and/or passwords are rejected.
-   - Your federated **Database** name. _Required_  
+   - Your federated **Database** name. _Required_ \
      Use the name of the federated database obtained [in the prerequisites](#obtaining-connection-information-for-your-federated-database-instance).
-   - The logging level for the underlying ODBC driver. _Optional, Default value: INFO_  
-   If you need more information in order to troubleshoot an issue, you can increase the logging level. Please note that increasing the logging level will make the driver slower. Only use the DEBUG level while troubleshooting issues.
+   - A SQL query. _Optional_ \
+     Enter a SQL query to immediately query a table. If the **Database** is the same as above, you may omit it from the query.
+     ```
+     SELECT * FROM orders
+     ```
 
    
    Select **OK**.  
 
-   ![Atlas SQL connection dialogue](./media/mongodb/mongodb_connection_dialogue.png)
+   ![Atlas SQL connection dialogue](./media/mongodb/mongodb_connection_dialog.png)
    
 5. Enter your Atlas MongoDB Database access username and password and select **Connect**.  
 
@@ -82,13 +85,6 @@ To connect using the Atlas SQL interface:
       Use the MongoDB URI obtained [in the prerequisites](#obtaining-connection-information-for-your-federated-database-instance).  Make sure that it doesn't contain your username and password. URIs containing username and/or passwords are rejected.
     - Your federated **Database** name. _Required_  
       Use the name of the federated database obtained [in the prerequisites](#obtaining-connection-information-for-your-federated-database-instance).
-   - The logging level for the underlying ODBC driver. _Optional, Default value: INFO_  
-      If you need more information in order to troubleshoot an issue, you can increase the logging level. 
-      Please note that increasing the logging level will make the driver slower.
-      Only use the DEBUG level while troubleshooting issues.
-    - Enter a **Connection name**.
-    - Choose a **Data gateway**.
-    - Enter your Atlas MongoDB Database access username and password and select **Next**.
 
    [//]: # (![Connection Settings](./media/mongodb/mongodb_connect_to_data_source.png)
 
