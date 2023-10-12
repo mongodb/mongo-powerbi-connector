@@ -3,11 +3,7 @@ section MongoDBAtlasODBCQueryTests;
 shared IntegrationTests = [
     uri = "mongodb://localhost/?ssl=false",
     Query_Complex_Types_Qualified = Value.NativeQuery(
-        MongoDBAtlasODBC.Contents(
-            uri, "integration_test", "info", []
-        ){
-            [Name = "integration_test", Kind = "database"]
-        }[Data],
+        MongoDBAtlasODBC.Contents(uri, "integration_test", []){[Name = "integration_test", Kind = "database"]}[Data],
         "select * from integration_test.complex_types",
         null,
         [
