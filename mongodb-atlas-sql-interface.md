@@ -53,7 +53,7 @@ To connect using the Atlas SQL interface:
    - Your federated **Database** name. _Required_ \
      Use the name of the federated database obtained [in the prerequisites](#obtaining-connection-information-for-your-federated-database-instance).
    - A SQL query. _Optional_ \
-     Enter a SQL query to immediately query a table. If the **Database** is the same as above, you may omit it from the query.
+     Enter a native Atlas SQL query to execute immediately. If the **Database** is the same as above, you may omit it from the query.
      ```
      SELECT * FROM orders
      ```
