@@ -61,7 +61,7 @@ To connect using the Atlas SQL interface:
    
    Select **OK**.  
 
-   ![Atlas SQL connection dialogue](./media/mongodb/mongodb_connection_dialog.png)
+   ![Atlas SQL connection dialogue](./media/mongodb/mongodb_connection_dialogue.png)
    
 5. Enter your Atlas MongoDB Database access username and password and select **Connect**.  
 
