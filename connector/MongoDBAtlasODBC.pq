@@ -59,7 +59,8 @@ GetConnectionString = (uri as text, database as text) as record =>
             DRIVER = "MongoDB Atlas SQL ODBC Driver",
             DATABASE = database,
             URI = uri,
-            APPNAME = "powerbi-connector+<connector-version>"
+            APPNAME = "powerbi-connector+<connector-version>",
+            SIMPLE_TYPES_ONLY = 1
         ]
     in
         if DatabaseNotSet then
