@@ -134,7 +134,6 @@ MongoDBAtlasODBC.Publish = [
     ButtonText = {Extension.LoadString("ButtonTitle"), Extension.LoadString("ButtonHelp")},
     LearnMoreUrl = AtlasSQLLink,
     SourceTypeImage = MongoDBAtlasODBC.Icons,
-    // SQL-399: Add DirectQuery mode support
     SupportsDirectQuery = true,
     NativeQueryProperties = [
         navigationSteps = {
