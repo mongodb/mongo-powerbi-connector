@@ -129,12 +129,13 @@ MongoDBAtlasODBC = [
 
 // Data Source UI publishing description
 MongoDBAtlasODBC.Publish = [
-    Beta = true,
+    Beta = false,
     Category = "Database",
     ButtonText = {Extension.LoadString("ButtonTitle"), Extension.LoadString("ButtonHelp")},
     LearnMoreUrl = AtlasSQLLink,
     SourceTypeImage = MongoDBAtlasODBC.Icons,
-    SupportsDirectQuery = true,
+    // SQL-399: Add DirectQuery mode support
+    SupportsDirectQuery = false,
     NativeQueryProperties = [
         navigationSteps = {
             [
