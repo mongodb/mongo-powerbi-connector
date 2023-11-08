@@ -15,6 +15,21 @@
     "views" : null
   },
   {
+    "name" : "reports",
+    "collections" : [
+      {
+        "name": "*",
+        "dataSources" : [
+          {
+            "storeName" : "localmongo",
+            "database" : "reports"
+          }
+        ]
+      }
+    ],
+    "views" : null
+  },
+  {
     "name" : "integration_test",
     "collections" : [
       {
