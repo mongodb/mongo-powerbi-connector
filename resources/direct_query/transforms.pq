@@ -29,9 +29,15 @@ let
         {"date13", Date.DayOfWeek, type date},
         {"date14", Date.StartOfDay, type date},
         {"date15", Date.EndOfDay, type date},
-        {"date16", Date.EndOfDay, type date}
+        {"date16", Date.EndOfDay, type date},
+        {"date17", Time.Hour, type date},
+        {"date18", Time.StartOfHour, type date},
+        {"date19", Time.EndOfHour, type date},
+        {"date20", Time.Minute, type date},
+        {"date21", Time.Second, type date}
     }),
     #"Replaced Value" = Table.ReplaceValue(#"Lowercased Text","4","hello",Replacer.ReplaceText,{"str3"}),
-    #"Replaced Value 2" = Table.ReplaceValue(#"Replaced Value", 1.7E-27, 42.5, Replacer.ReplaceValue, {"num8"})
+    #"Replaced Value1" = Table.ReplaceValue(#"Replaced Value", 1.7E-27, 42.5, Replacer.ReplaceValue, {"num8"}),
+    #"Replaced Value2" = Table.ReplaceValue(#"Replaced Value1",#datetime(2013, 9, 15, 0, 0, 0),#datetime(2012, 8, 12, 23, 0, 0),Replacer.ReplaceValue,{"date22"})
 in
-    #"Replaced Value 2"
+    #"Replaced Value2"
