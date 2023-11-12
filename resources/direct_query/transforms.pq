@@ -38,6 +38,7 @@ let
     }),
     #"Replaced Value" = Table.ReplaceValue(#"Lowercased Text","4","hello",Replacer.ReplaceText,{"str3"}),
     #"Replaced Value1" = Table.ReplaceValue(#"Replaced Value", 1.7E-27, 42.5, Replacer.ReplaceValue, {"num8"}),
-    #"Replaced Value2" = Table.ReplaceValue(#"Replaced Value1",#datetime(2013, 9, 15, 0, 0, 0),#datetime(2012, 8, 12, 23, 0, 0),Replacer.ReplaceValue,{"date22"})
+    #"Replaced Value2" = Table.ReplaceValue(#"Replaced Value1",#datetime(2013, 9, 15, 0, 0, 0),#datetime(2012, 8, 12, 23, 0, 0),Replacer.ReplaceValue,{"date22"}),
+    #"Replaced Value3" = Table.ReplaceValue(#"Replaced Value2", true, false, Replacer.ReplaceValue,{"bool0"})
 in
-    #"Replaced Value2"
+    #"Replaced Value3"
