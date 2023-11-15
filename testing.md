@@ -66,7 +66,7 @@ The following query is sufficient to test Native Query as it exercises mutliple 
 At this time, Direct Query must be tested semi-manually by reviewers, until such time as the Power Query
 SDK uses the same Mashup Engine as Power BI.
 
-Each Direct Query we want to run is stored in the `resources/direct_query` directory
+Each Direct Query test we want to run is stored in the `resources/direct_query` directory
 
 1. Ensure you have a local ADF running.
 - Navigate to the `mongo-powerbi-connector` repository locally.
