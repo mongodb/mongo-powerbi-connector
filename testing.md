@@ -106,8 +106,8 @@ Each Direct Query we want to run is stored in the `resources/direct_query` direc
 - Make sure to select the Direct Query radio button instead of Import
 - The database is `reports`.
 7. When the data explorer comes up, select the `reports` database and checkbox both collections:
-- transforms
-- table_ops
+- `transforms`
+- `table_ops`
 8. Wait a very long time for both collections to load
 9. Open the `Advanced Query Editor` for the `transforms` table
 10. Repeat the following process for the following queries: `resources/direct_query/conversion.pq`,
