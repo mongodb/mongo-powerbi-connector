@@ -184,7 +184,7 @@ The following query is sufficient to test Native Query as it exercises mutliple 
 At this time, Direct Query must be tested semi-manually by reviewers, until such time as the Power Query
 SDK uses the same Mashup Engine as Power BI.
 
-Each Direct Query we want to run is stored in the `resources/direct_query` directory
+Each Direct Query test we want to run is stored in the `resources/direct_query` directory
 
 1. Ensure you have a local ADF running.
 - Navigate to the `mongo-powerbi-connector` repository locally.
@@ -218,7 +218,7 @@ Each Direct Query we want to run is stored in the `resources/direct_query` direc
 
 3. Start Power BI.
 4. Choose *Get Data*
-5. Search for "mongodb" in the search box, and select the *MongoDB Atlas SQL (Beta)* connector.
+5. Search for "mongodb" in the search box, and select the *MongoDB Atlas SQL* connector.
 6. Connect to your local ADF.
 - The URI should be `mongodb://localhost`
 - Make sure to select the Direct Query radio button instead of Import
