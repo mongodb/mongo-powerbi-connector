@@ -149,7 +149,7 @@ MongoDBAtlasODBC.Publish = [
             ]
         },
         nativeQueryOptions = [
-            EnableFolding = false
+            EnableFolding = true
         ]
     ]
 ];
