@@ -100,7 +100,7 @@ Each Direct Query test we want to run is stored in the `resources/direct_query` 
 
 3. Start Power BI.
 4. Choose *Get Data*
-5. Search for "mongodb" in the search box, and select the *MongoDB Atlas SQL (Beta)* connector.
+5. Search for "mongodb" in the search box, and select the *MongoDB Atlas SQL* connector.
 6. Connect to your local ADF.
 - The URI should be `mongodb://localhost`
 - Make sure to select the Direct Query radio button instead of Import
