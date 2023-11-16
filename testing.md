@@ -71,7 +71,7 @@ It is a good idea to clear the data cache and data source settings to ensure the
 ## Running Tests
 ### Navigation Table
 Test that the expected tables are shown in the navigation table and that data is loaded in the expected format.
-* `Get Data` -> `More...` -> `Database` -> `MongoDB Atlas SQL (Beta)`
+* `Get Data` -> `More...` -> `Database` -> `MongoDB Atlas SQL`
 * Enter MongoDB URI: `mongodb://localhost/?ssl=false`
 * Enter Database: `integration_test`
 * Click `OK`
@@ -92,7 +92,7 @@ Test that the expected tables are shown in the navigation table and that data is
 
 ### Query
 Test that data is loaded in the expected format when running a native query.
-* `Get Data` -> `More...` -> `Database` -> `MongoDB Atlas SQL (Beta)`
+* `Get Data` -> `More...` -> `Database` -> `MongoDB Atlas SQL`
 * Enter MongoDB URI: `mongodb://localhost/?ssl=false`
 * Enter Database: `supplies`
 * Enter SQL Statement: `select * from sales`
@@ -133,9 +133,9 @@ The following query is sufficient to test Native Query as it exercises mutliple 
 1. Ensure you have a local ADF running following the steps from [Setup](Setup) Section.
 - Load data
     ```
-    ./mongoimport.exe --uri="mongodb://localhost:28017/supplies" --drop resources/integration_test/testdata/sales.json
+    ./mongoimport.exe --uri="mongodb://$ADF_TEST_LOCAL_HOST:$MDB_TEST_LOCAL_PORT/supplies" --drop resources/integration_test/testdata/sales.json
     ```
-  - Set the ADF schema
+- Set the ADF schema
     ```
     MONGOSH=$(find ./local_adf/ | grep mongo.exe | head -1)
     # Replace with the namespace you are adding
@@ -147,7 +147,7 @@ The following query is sufficient to test Native Query as it exercises mutliple 
 4. Choose *Get Data*
 5. Search for "mongodb" in the search box, and select the *MongoDB Atlas SQL* connector.
 6. Connect to your local ADF.
-- The URI should be `mongodb://localhost`
+- The URI should be `mongodb://localhost` (unless $ADF_TEST_LOCAL_HOST differs)
 - The database is `integration_test`.
 - In the Native Query box, input the following SQL query which groups all sold items by name and calculates out how much revenue they generate per sale.
   ```
@@ -181,10 +181,10 @@ Each Direct Query test we want to run is stored in the `resources/direct_query` 
 1. Ensure you have a local ADF running using the instructions from the [Setup](Setup) Section.
 - Load data
     ```
-    ./mongoimport.exe --uri="mongodb://localhost:28017/reports" --drop resources/integration_test/testdata/transforms.json
-    ./mongoimport.exe --uri="mongodb://localhost:28017/reports" --drop resources/integration_test/testdata/table_ops.json
+    ./mongoimport.exe --uri="mongodb://$ADF_TEST_LOCAL_HOST:$MDB_TEST_LOCAL_PORT/reports" --drop resources/integration_test/testdata/transforms.json
+    ./mongoimport.exe --uri="mongodb://$ADF_TEST_LOCAL_HOST:$MDB_TEST_LOCAL_PORT/reports" --drop resources/integration_test/testdata/table_ops.json
     ```
-  - Set the ADF schema
+- Set the ADF schema
     ```
     MONGOSH=$(find ./local_adf/ | grep mongo.exe | head -1)
     # Replace with the namespace you are adding
@@ -196,7 +196,7 @@ Each Direct Query test we want to run is stored in the `resources/direct_query` 
 4. Choose *Get Data*
 5. Search for "mongodb" in the search box, and select the *MongoDB Atlas SQL* connector.
 6. Connect to your local ADF.
-- The URI should be `mongodb://localhost`
+- The URI should be `mongodb://localhost` (unless $ADF_TEST_LOCAL_HOST differs)
 - Make sure to select the Direct Query radio button instead of Import
 - The database is `reports`.
 7. When the data explorer comes up, select the `reports` database and checkbox both collections:
