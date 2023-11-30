@@ -314,6 +314,9 @@ functions:
         working_dir: mongo-powerbi-connector
         script: |
           ${prepare_shell}
+          if [[ $(git branch --show-current) != 'main' ]]; then
+             exit 0
+          fi
           sed -i 's@{RELEASE_VERSION}@'${RELEASE_VERSION}'@' mongo-powerbi-connector-downloads_template.json
           sed -i 's@{RELEASE_PQX_PATH}@'${RELEASE_PQX_PATH}'@' mongo-powerbi-connector-downloads_template.json
           echo "-------------------------"
