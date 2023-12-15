@@ -315,22 +315,22 @@ functions:
         script: |
           ${prepare_shell}
           if [[ $(git rev-parse --abbrev-ref HEAD) != 'main' ]]; then
-             exit 0
+             exit 1
           fi
           sed -i 's@{RELEASE_VERSION}@'${RELEASE_VERSION}'@' mongo-powerbi-connector-downloads_template.json
           sed -i 's@{RELEASE_PQX_PATH}@'${RELEASE_PQX_PATH}'@' mongo-powerbi-connector-downloads_template.json
           echo "-------------------------"
           cat mongo-powerbi-connector-downloads_template.json
           echo "-------------------------"
-#    - command: s3.put
-#      params:
-#        aws_key: ${release_aws_key}
-#        aws_secret: ${release_aws_secret}
-#        local_file: mongo-powerbi-connector/mongo-powerbi-connector-downloads_template.json
-#        remote_file: mongo-powerbi-connector/mongo-powerbi-connector-downloads.json
-#        bucket: translators-connectors-releases
-#        permissions: public-read
-#        content_type: application/json
+    - command: s3.put
+      params:
+        aws_key: ${release_aws_key}
+        aws_secret: ${release_aws_secret}
+        local_file: mongo-powerbi-connector/mongo-powerbi-connector-downloads_template.json
+        remote_file: mongo-powerbi-connector/mongo-powerbi-connector-downloads.json
+        bucket: translators-connectors-releases
+        permissions: public-read
+        content_type: application/json
 
 pre:
   - func: "fetch powerbi source"
