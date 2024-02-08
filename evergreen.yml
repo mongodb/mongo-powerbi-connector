@@ -83,6 +83,7 @@ functions:
           RELEASE_PQX_PATH: "mongo-powerbi-connector/MongoDBAtlasODBC-$RELEASE_VERSION.pqx"
           prepare_shell: |
             set -o errexit
+            set +o xtrace
             export PATH="$PATH"
             export RELEASE_VERSION="$RELEASE_VERSION"
             export RELEASE_PQX_PATH="$RELEASE_PQX_PATH"
@@ -95,6 +96,7 @@ functions:
             export SELF_SIGNED_PWD="${self_signed_pwd}"
             export SELF_SIGNED_CERT="${self_signed_cert}"
             export SELF_SIGNED_KEY="${self_signed_key}"
+            set -o xtrace
           EOT
     - command: expansions.update
       params:
