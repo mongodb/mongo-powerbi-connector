@@ -221,7 +221,6 @@ functions:
     - command: shell.exec
       type: system
       params:
-        silent: true
         working_dir: mongo-powerbi-connector
         env:
           SELF_SIGNED_PWD: "${self_signed_pwd}"
