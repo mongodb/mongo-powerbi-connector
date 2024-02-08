@@ -83,7 +83,6 @@ functions:
           RELEASE_PQX_PATH: "mongo-powerbi-connector/MongoDBAtlasODBC-$RELEASE_VERSION.pqx"
           prepare_shell: |
             set -o errexit
-            set +o xtrace
             export PATH="$PATH"
             export RELEASE_VERSION="$RELEASE_VERSION"
             export RELEASE_PQX_PATH="$RELEASE_PQX_PATH"
@@ -93,7 +92,6 @@ functions:
             export ADF_TEST_LOCAL_AUTH_DB="${adf_test_local_auth_db}"
             export ADF_TEST_LOCAL_HOST="${adf_test_local_host}"
             export MDB_TEST_LOCAL_PORT="${mdb_test_local_port}"
-            set -o xtrace
           EOT
     - command: expansions.update
       params:
