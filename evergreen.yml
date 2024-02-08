@@ -93,9 +93,6 @@ functions:
             export ADF_TEST_LOCAL_AUTH_DB="${adf_test_local_auth_db}"
             export ADF_TEST_LOCAL_HOST="${adf_test_local_host}"
             export MDB_TEST_LOCAL_PORT="${mdb_test_local_port}"
-            export SELF_SIGNED_PWD="${self_signed_pwd}"
-            export SELF_SIGNED_CERT="${self_signed_cert}"
-            export SELF_SIGNED_KEY="${self_signed_key}"
             set -o xtrace
           EOT
     - command: expansions.update
@@ -228,6 +225,10 @@ functions:
       params:
         silent: true
         working_dir: mongo-powerbi-connector
+        env:
+          SELF_SIGNED_PWD: "${self_signed_pwd}"
+          SELF_SIGNED_CERT: "${self_signed_cert}"
+          SELF_SIGNED_KEY: "${self_signed_key}"
         script: |
           ${prepare_shell}
           echo -ne $SELF_SIGNED_CERT > mdb-self-signed-certificate.crt
