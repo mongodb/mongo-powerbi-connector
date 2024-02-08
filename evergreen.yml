@@ -64,6 +64,7 @@ functions:
   "generate expansions":
     - command: shell.exec
       params:
+        silent: true
         shell: bash
         working_dir: mongo-powerbi-connector
         script: |
