@@ -229,9 +229,9 @@ functions:
         script: |
           ${prepare_shell}
           echo -ne $SELF_SIGNED_CERT > mdb-self-signed-certificate.crt
-          chmod 664 mdb-self-signed-certificate.crt
+          chmod 666 mdb-self-signed-certificate.crt
           echo -ne $SELF_SIGNED_KEY > mdb-self-signed-key.pem
-          chmod 600 mdb-self-signed-key.pem
+          chmod 666 mdb-self-signed-key.pem
           # Convert certificate to pfx format, used by MakePQX.exe
           openssl pkcs12 -export -out mdb-self-signed-certificate.pfx -inkey mdb-self-signed-key.pem -in mdb-self-signed-certificate.crt -password pass:$SELF_SIGNED_PWD
           tools/MakePQX.exe sign MongoDBAtlasODBC.pqx --certificate  mdb-self-signed-certificate.pfx --password $SELF_SIGNED_PWD
