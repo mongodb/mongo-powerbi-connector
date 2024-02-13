@@ -234,10 +234,11 @@ functions:
           #echo -ne $SELF_SIGNED_KEY > mdb-self-signed-key.pem
           #chmod 666 mdb-self-signed-key.pem
           # Convert certificate to pfx format, used by MakePQX.exe
-          # openssl pkcs12 -export -out mdb-self-signed-certificate.pfx -inkey mdb-self-signed-key.pem -in mdb-self-signed-certificate.crt -password pass:$SELF_SIGNED_PWD
-          echo $SELF_SIGNED_PFX > mdb-self-signed-certificate.pfx.b64
-          cat mdb-self-signed-certificate.pfx.b64 
-          base64 -d mdb-self-signed-certificate.pfx.b64 > mdb-self-signed-certificate.pfx
+          
+          openssl pkcs12 -export -out mdb-self-signed-certificate.pfx -inkey mdb-self-signed-key.pem -in mdb-self-signed-certificate.crt -password pass:$SELF_SIGNED_PWD
+          #echo $SELF_SIGNED_PFX > mdb-self-signed-certificate.pfx.b64
+          #cat mdb-self-signed-certificate.pfx.b64 
+          #base64 -d mdb-self-signed-certificate.pfx.b64 > mdb-self-signed-certificate.pfx
           tools/MakePQX.exe sign MongoDBAtlasODBC.pqx --certificate  mdb-self-signed-certificate.pfx --password $SELF_SIGNED_PWD
           tools/MakePQX.exe verify MongoDBAtlasODBC.pqx
           cp MongoDBAtlasODBC.pqx MongoDBAtlasODBC-signed.pqx
