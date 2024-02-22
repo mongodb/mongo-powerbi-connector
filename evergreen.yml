@@ -227,7 +227,6 @@ functions:
           SELF_SIGNED_PWD: "${self_signed_pwd}"
           SELF_SIGNED_CERT: "${self_signed_cert}"
           SELF_SIGNED_KEY: "${self_signed_key}"
-          SELF_SIGNED_PFX: "${self_signed_pfx}"
         script: |
           ${prepare_shell}
           # The redaction of evergreen variables in the evergreen code is using go's replaceAll in a
