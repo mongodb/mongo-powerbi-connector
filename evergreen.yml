@@ -358,7 +358,7 @@ tasks:
   - name: sign
     depends_on:
       - name: build
-        #  - name: integration-test
+      - name: integration-test
     commands:
       - func: "fetch packaged connector"
       - func: "install power query tools"
