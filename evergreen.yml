@@ -148,7 +148,7 @@ functions:
           # Generate schema on imported data
           $MONGOSHELL -u $ADF_TEST_LOCAL_USER --password $ADF_TEST_LOCAL_PWD --authenticationDatabase \
             $ADF_TEST_LOCAL_AUTH_DB $ADF_TEST_LOCAL_HOST/admin \
-            --eval 'db.runCommand({sqlGenerateSchema: 1, 
+            --eval 'db.runCommand({sqlGenerateSchema: 1,
             sampleNamespaces: ["integration_test.complex_types", "supplies.sales"], setSchemas: true})' &&
 
           # Set credentials for the queryFiles
@@ -167,12 +167,12 @@ functions:
           # Until the SDK is updated (October-November 2023, we can't run these tests)
           # echo "Running MongoDBAtlasODBC.nativequery-test.query.pq" &&
           # test_output+=`tools/PQTest.exe run-test --extension MongoDBAtlasODBC.pqx \
-          #   --queryFile connector/MongoDBAtlasODBC.nativequery-test.query.pq --prettyPrint` 
+          #   --queryFile connector/MongoDBAtlasODBC.nativequery-test.query.pq --prettyPrint`
           EXITCODE=$?
           echo "$test_output"
-          failures=`echo "$test_output"  | grep Failure -A 1 || true` 
-          echo $test_output > MongoDBAtlasODBC.integration-test.log 
-          if [[ ! -z $failures ]]; then 
+          failures=`echo "$test_output"  | grep Failure -A 1 || true`
+          echo $test_output > MongoDBAtlasODBC.integration-test.log
+          if [[ ! -z $failures ]]; then
             echo "Failures Encountered:"
             echo $failures
             if [ "$EXITCODE" -eq "0" ]; then
@@ -223,10 +223,20 @@ functions:
       params:
         silent: true
         working_dir: mongo-powerbi-connector
+        env:
+          SELF_SIGNED_PWD: "${self_signed_pwd}"
+          SELF_SIGNED_CERT: "${self_signed_cert}"
+          SELF_SIGNED_KEY: "${self_signed_key}"
+          SELF_SIGNED_PFX: "${self_signed_pfx}"
         script: |
           ${prepare_shell}
-          echo -ne $SELF_SIGNED_CERT > mdb-self-signed-certificate.crt
-          echo -ne $SELF_SIGNED_KEY > mdb-self-signed-key.pem
+          # The redaction of evergreen variables in the evergreen code is using go's replaceAll in a
+          # way that replaces new lines with spaces. If they fix that, these sed commands will probably still
+          # work, but will become unnecessary. In each case, we need to keep it from sticking new
+          # lines in "BEGIN CERTIFICATE" (etc) because openssl is very very particular about
+          # newlines and spaces in key and cert files.
+          echo -ne $SELF_SIGNED_CERT | sed 's| CERT|CERT|g' | sed 's| |\n|g' | sed 's|CERT| CERT|g' > cert2 > mdb-self-signed-certificate.crt
+          echo -ne $SELF_SIGNED_KEY | sed 's| PRIVATE |PRIVATE|g' | sed 's| |\n|g' | sed 's|PRIVATE| PRIVATE |g' > mdb-self-signed-key.pem
           # Convert certificate to pfx format, used by MakePQX.exe
           openssl pkcs12 -export -out mdb-self-signed-certificate.pfx -inkey mdb-self-signed-key.pem -in mdb-self-signed-certificate.crt -password pass:$SELF_SIGNED_PWD
           tools/MakePQX.exe sign MongoDBAtlasODBC.pqx --certificate  mdb-self-signed-certificate.pfx --password $SELF_SIGNED_PWD
@@ -399,11 +409,16 @@ task_groups:
 buildvariants:
   - name: windows-64
     display_name: "Windows"
-    run_on: [windows-64-vs2019-large]
     tasks:
       - name: build
+        run_on: [windows-64-vs2019-large]
       - name: test-integration-group
+        run_on: [windows-64-vs2019-large]
       - name: sign
+        run_on: [windows-64-vs2015-large]
       - name: release
+        run_on: [windows-64-vs2019-large]
       - name: test-release
+        run_on: [windows-64-vs2019-large]
       - name: download-center-update
+        run_on: [windows-64-vs2019-large]
