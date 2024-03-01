@@ -148,7 +148,7 @@ functions:
           # Generate schema on imported data
           $MONGOSHELL -u $ADF_TEST_LOCAL_USER --password $ADF_TEST_LOCAL_PWD --authenticationDatabase \
             $ADF_TEST_LOCAL_AUTH_DB $ADF_TEST_LOCAL_HOST/admin \
-            --eval 'db.runCommand({sqlGenerateSchema: 1, 
+            --eval 'db.runCommand({sqlGenerateSchema: 1,
             sampleNamespaces: ["integration_test.complex_types", "supplies.sales"], setSchemas: true})' &&
 
           # Set credentials for the queryFiles
@@ -167,12 +167,12 @@ functions:
           # Until the SDK is updated (October-November 2023, we can't run these tests)
           # echo "Running MongoDBAtlasODBC.nativequery-test.query.pq" &&
           # test_output+=`tools/PQTest.exe run-test --extension MongoDBAtlasODBC.pqx \
-          #   --queryFile connector/MongoDBAtlasODBC.nativequery-test.query.pq --prettyPrint` 
+          #   --queryFile connector/MongoDBAtlasODBC.nativequery-test.query.pq --prettyPrint`
           EXITCODE=$?
           echo "$test_output"
-          failures=`echo "$test_output"  | grep Failure -A 1 || true` 
-          echo $test_output > MongoDBAtlasODBC.integration-test.log 
-          if [[ ! -z $failures ]]; then 
+          failures=`echo "$test_output"  | grep Failure -A 1 || true`
+          echo $test_output > MongoDBAtlasODBC.integration-test.log
+          if [[ ! -z $failures ]]; then
             echo "Failures Encountered:"
             echo $failures
             if [ "$EXITCODE" -eq "0" ]; then
@@ -321,6 +321,9 @@ functions:
         working_dir: mongo-powerbi-connector
         script: |
           ${prepare_shell}
+          if [[ $(git rev-parse --abbrev-ref HEAD) != 'main' ]]; then
+             exit 1
+          fi
           sed -i 's@{RELEASE_VERSION}@'${RELEASE_VERSION}'@' mongo-powerbi-connector-downloads_template.json
           sed -i 's@{RELEASE_PQX_PATH}@'${RELEASE_PQX_PATH}'@' mongo-powerbi-connector-downloads_template.json
           echo "-------------------------"
