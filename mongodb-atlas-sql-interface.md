@@ -58,7 +58,7 @@ To connect using the Atlas SQL interface:
      ```
      SELECT * FROM orders
      ```
-   - Choose Import or Direct Query mode
+   - Select either Import or DirectQuery for your desired Data Connectivity mode
    
    Select **OK**.  
 
