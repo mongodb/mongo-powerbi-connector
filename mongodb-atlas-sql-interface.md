@@ -30,6 +30,7 @@ The [MongoDB Atlas SQL ODBC Driver](https://www.mongodb.com/try/download/odbc-dr
 ## Capabilities Supported
 
 * Import
+* Direct Query
 
 ## Connect to MongoDB Atlas federated database using Atlas SQL interface from Power Query Desktop
 
@@ -57,7 +58,7 @@ To connect using the Atlas SQL interface:
      ```
      SELECT * FROM orders
      ```
-
+   - Select either Import or DirectQuery for your desired Data Connectivity mode
    
    Select **OK**.  
 
