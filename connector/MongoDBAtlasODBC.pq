@@ -1,4 +1,4 @@
-[Version = "1.0.0"]
+[Version = "1.1.0"]
 section MongoDBAtlasODBC;
 
 // When set to true, additional trace information will be written out to the User log.
@@ -10,6 +10,14 @@ AtlasSQLLink = "https://www.mongodb.com/atlas/sql";
 
 [DataSource.Kind = "MongoDBAtlasODBC", Publish = "MongoDBAtlasODBC.Publish"]
 shared MongoDBAtlasODBC.Contents = Value.ReplaceType(MongoDBAtlasODBCImpl, MongoDBAtlasODBCType);
+
+[DataSource.Kind = "MongoDBAtlasODBC"]
+shared MongoDBAtlasODBC.Query = (mongoDbUri, database, query, optional options) =>
+    error
+        Error.Record(
+            "Expression.Error",
+            "MongoDBAtlasODBC.Query is no longer supported. Please use MongoDBAtlasODBC.Contents instead."
+        );
 
 MongoDBAtlasODBCType = type function (
     mongodbUri as (
