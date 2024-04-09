@@ -1,4 +1,4 @@
-[Version = "1.1.0"]
+[Version = "1.2.0"]
 section MongoDBAtlasODBC;
 
 // When set to true, additional trace information will be written out to the User log.
