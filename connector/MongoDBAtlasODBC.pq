@@ -1,4 +1,5 @@
-[Version = "1.2.0"]
+// Release versions are set automatically by the build system. Do not manually edit the vesion in source.
+[Version = "0.0.0"]
 section MongoDBAtlasODBC;
 
 // When set to true, additional trace information will be written out to the User log.
