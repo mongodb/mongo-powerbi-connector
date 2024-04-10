@@ -75,6 +75,10 @@ Check that the released file is available at the URL:
 - Windows
 `https://translators-connectors-releases.s3.us-east-1.amazonaws.com/mongo-powerbi-connector/MongoDBAtlasODBC-${release_version}.pqx`
 
+#### Verify that the verson is set correctly
+
+Download the aformentioned `.pqx` file to your computer, add the `.zip` extension to the end of it, then unzip it and ensure the version in `MongoDBAtlasODBC.pq` matches the version of the git tag for release.
+
 #### Verify that the connector works with PowerBI
 
 Download and install the connector file.
