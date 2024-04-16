@@ -12,7 +12,6 @@ AtlasSQLLink = "https://www.mongodb.com/atlas/sql";
 [DataSource.Kind = "MongoDBAtlasODBC", Publish = "MongoDBAtlasODBC.Publish"]
 shared MongoDBAtlasODBC.Contents = Value.ReplaceType(MongoDBAtlasODBCImpl, MongoDBAtlasODBCType);
 
-[DataSource.Kind = "MongoDBAtlasODBC"]
 shared MongoDBAtlasODBC.Query = (mongoDbUri, database, query, optional options) =>
     error
         Error.Record(
