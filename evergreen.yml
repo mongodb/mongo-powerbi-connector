@@ -97,6 +97,13 @@ functions:
       params:
         file: mongo-powerbi-connector/expansions.yml
 
+  "generate github token":
+    command: github.generate_token
+    params:
+      owner: 10gen
+      repo: mongohouse
+      expansion_name: github_token
+
   "install mongoimport tool":
     - command: shell.exec
       params:
@@ -125,6 +132,8 @@ functions:
     - command: shell.exec
       type: test
       params:
+        env:
+          GITHUB_TOKEN: "${github_token}"
         add_expansions_to_env: true
         shell: bash
         working_dir: mongo-powerbi-connector
@@ -355,6 +364,7 @@ tasks:
       - name: build
     commands:
       - func: "install mongoimport tool"
+      - func: "generate github token"
       - func: "run integration test"
 
   - name: sign
