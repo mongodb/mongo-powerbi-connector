@@ -49,9 +49,26 @@ GO="$GOBINDIR/go"
 
 PATH=$GOBINDIR:$PATH
 
+# GITHUB_TOKEN must be set for cloning 10gen/mongohouse repository from Evergreen hosts, and the
+# dependencies needed to build it.
+# If unset, it will default to using the SSH private key on the local system.
+if [[ ${GITHUB_TOKEN} ]]; then
+  echo "Using GITHUB_TOKEN for git clone"
+  # Clear git url configurations if they exist
+  git config --global --get-regexp '^url\.' | while read -r key _; do
+      git config --global --unset "$key"
+  done
+
+  MONGOHOUSE_URI=https://x-access-token:${GITHUB_TOKEN}@github.com/10gen/mongohouse.git
+  git config --global url."https://x-access-token:${GITHUB_TOKEN}@github.com/10gen/".insteadOf "https://github.com/10gen/"
+else
+  echo "GITHUB_TOKEN is not set, using ssh clone"
+  MONGOHOUSE_URI=git@github.com:10gen/mongohouse.git
+  git config --global url.git@github.com:.insteadOf https://github.com/
+fi
+
 MACHINE_ARCH=$(uname -m)
 LOCAL_INSTALL_DIR=$(pwd)/local_adf
-MONGOHOUSE_URI=git@github.com:10gen/mongohouse.git
 MONGO_DB_PATH=$LOCAL_INSTALL_DIR/test_db
 LOGS_PATH=$LOCAL_INSTALL_DIR/logs
 DB_CONFIG_PATH=$(pwd)/resources/integration_test/testdata/adf_db_config.json
@@ -387,7 +404,6 @@ if [ $ARG = $START ]; then
           MONGOHOUSE_DIR=$LOCAL_INSTALL_DIR/mongohouse
         fi
         # Install and start mongohoused
-        git config --global url.git@github.com:.insteadOf https://github.com/
         # Clone the mongohouse repo
         if [ ! -d "$MONGOHOUSE_DIR" ]; then
             git clone $MONGOHOUSE_URI $MONGOHOUSE_DIR
@@ -448,7 +464,7 @@ if [ $ARG = $START ]; then
     mkdir -p $LOGS_PATH
     # Start mongohoused with appropriate config
     $GO run -tags mongosql ./cmd/mongohoused/mongohoused.go \
-      --config ./testdata/config/inline_local/frontend-agent-backend.yaml >> $LOGS_PATH/${MONGOHOUSED}.log &
+      --config ./testdata/config/inline_local/frontend-agent-backend-resource-manager.yaml >> $LOGS_PATH/${MONGOHOUSED}.log &
     echo $! > $TMP_DIR/${MONGOHOUSED}.pid
 
     waitCounter=0

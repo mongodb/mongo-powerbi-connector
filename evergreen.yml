@@ -97,6 +97,13 @@ functions:
       params:
         file: mongo-powerbi-connector/expansions.yml
 
+  "generate github token":
+    command: github.generate_token
+    params:
+      owner: 10gen
+      repo: mongohouse
+      expansion_name: github_token
+
   "install mongoimport tool":
     - command: shell.exec
       params:
@@ -125,6 +132,8 @@ functions:
     - command: shell.exec
       type: test
       params:
+        env:
+          GITHUB_TOKEN: "${github_token}"
         add_expansions_to_env: true
         shell: bash
         working_dir: mongo-powerbi-connector
@@ -141,9 +150,7 @@ functions:
           ./mongoimport.exe --uri="mongodb://$ADF_TEST_LOCAL_HOST:$MDB_TEST_LOCAL_PORT/integration_test" \
             --drop resources/integration_test/testdata/complex_types.json &&
 
-
-          MONGOSHELL=$(find ./local_adf/ | grep mongo.exe | head -1) &&
-          chmod +x $MONGOSHELL &&
+          MONGOSHELL=$(find ./local_adf/ | grep mongosh.exe | head -1) &&
 
           # Generate schema on imported data
           $MONGOSHELL -u $ADF_TEST_LOCAL_USER --password $ADF_TEST_LOCAL_PWD --authenticationDatabase \
@@ -163,21 +170,20 @@ functions:
           # Run Integration Tests
           echo -e "\nRunning MongoDBAtlasODBC.datasource-test.query.pq" &&
           test_output=`tools/PQTest.exe run-test --extension MongoDBAtlasODBC.pqx \
-            --queryFile connector/MongoDBAtlasODBC.datasource-test.query.pq --prettyPrint` &&
+            --queryFile connector/MongoDBAtlasODBC.datasource-test.query.pq --prettyPrint` 
           # Until the SDK is updated (October-November 2023, we can't run these tests)
           # echo "Running MongoDBAtlasODBC.nativequery-test.query.pq" &&
           # test_output+=`tools/PQTest.exe run-test --extension MongoDBAtlasODBC.pqx \
           #   --queryFile connector/MongoDBAtlasODBC.nativequery-test.query.pq --prettyPrint`
           EXITCODE=$?
           echo "$test_output"
-          failures=`echo "$test_output"  | grep Failure -A 1 || true`
           echo $test_output > MongoDBAtlasODBC.integration-test.log
-          if [[ ! -z $failures ]]; then
-            echo "Failures Encountered:"
-            echo $failures
-            if [ "$EXITCODE" -eq "0" ]; then
-              EXITCODE=1
-            fi
+          # Check for "100% success rate" and "All X Passed"
+          if echo "$test_output" | grep -q "100% success rate" && echo "$test_output" | grep -q "All .* Passed"; then
+            echo "All tests passed successfully."
+          else
+            echo "Tests failed or unexpected output. Check the log for details."
+            EXITCODE=1
           fi
 
           # Stop local ADF, always run this to keep task from hanging
@@ -355,6 +361,7 @@ tasks:
       - name: build
     commands:
       - func: "install mongoimport tool"
+      - func: "generate github token"
       - func: "run integration test"
 
   - name: sign
