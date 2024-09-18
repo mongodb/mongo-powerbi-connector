@@ -64,6 +64,7 @@ if [[ ${GITHUB_TOKEN} ]]; then
 else
   echo "GITHUB_TOKEN is not set, using ssh clone"
   MONGOHOUSE_URI=git@github.com:10gen/mongohouse.git
+  git config --global url.git@github.com:.insteadOf https://github.com/
 fi
 
 MACHINE_ARCH=$(uname -m)
