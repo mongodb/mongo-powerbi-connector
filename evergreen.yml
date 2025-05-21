@@ -394,6 +394,7 @@ tasks:
       - func: "bootstrap mongo-orchestration"
       - func: "generate sql-engines github token"
       - func: "run integration test"
+      - func: "stop mongo-orchestration"
 
   - name: sign
     depends_on:
