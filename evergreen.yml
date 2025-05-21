@@ -21,6 +21,17 @@ timeout:
       script: |
         ls -la
 
+modules:
+  - name: sql-engines-common-test-infra
+    owner: 10gen
+    repo: sql-engines-common-test-infra
+    branch: main
+    auto_update: true
+
+include:
+  - filename: evergreen/configs/mongodb_util.yml
+    module: sql-engines-common-test-infra
+
 functions:
   "build connector":
     - command: shell.exec
@@ -60,6 +71,8 @@ functions:
     - command: git.get_project
       params:
         directory: mongo-powerbi-connector
+        revisions:
+          sql-engines-common-test-infra: ${sql-engines-common-test-infra_rev}
 
   "generate expansions":
     - command: shell.exec
@@ -77,10 +90,20 @@ functions:
             export RELEASE_VERSION="0.0.0-$(git describe --always)"
           fi
 
+          PROJECT_DIRECTORY="$(pwd)"
+          COMMON_TEST_INFRA_DIR="$PROJECT_DIRECTORY/sql-engines-common-test-infra"
+          DRIVERS_TOOLS="$PROJECT_DIRECTORY/evergreen/drivers-tools"
+          MONGO_ORCHESTRATION_HOME="$DRIVERS_TOOLS/.evergreen/orchestration"
+          MONGODB_BINARIES="$DRIVERS_TOOLS/mongodb/bin"
+          
           cat <<EOT > expansions.yml
           RELEASE_VERSION: "$RELEASE_VERSION"
           UPDATE_PLUGIN_VERSION: "$UPDATE_PLUGIN_VERSION"
           RELEASE_PQX_PATH: "mongo-powerbi-connector/MongoDBAtlasODBC-$RELEASE_VERSION.pqx"
+          DRIVERS_TOOLS: "$DRIVERS_TOOLS"
+          common_test_infra_dir: "$COMMON_TEST_INFRA_DIR"
+          script_dir: "$COMMON_TEST_INFRA_DIR/evergreen/scripts"
+          MONGO_ORCHESTRATION_HOME: "$DRIVERS_TOOLS/.evergreen/orchestration"
           prepare_shell: |
             set -o errexit
             export PATH="$PATH"
@@ -92,6 +115,13 @@ functions:
             export ADF_TEST_LOCAL_AUTH_DB="${adf_test_local_auth_db}"
             export ADF_TEST_LOCAL_HOST="${adf_test_local_host}"
             export MDB_TEST_LOCAL_PORT="${mdb_test_local_port}"
+          
+            # Common test infra variables
+            export PROJECT_DIRECTORY="$PROJECT_DIRECTORY"
+            export DRIVERS_TOOLS="$DRIVERS_TOOLS"
+            export MONGO_ORCHESTRATION_HOME="$MONGO_ORCHESTRATION_HOME"
+            export MONGODB_BINARIES="$MONGODB_BINARIES"
+            export COMMON_TEST_INFRA_DIR="$COMMON_TEST_INFRA_DIR"
           EOT
     - command: expansions.update
       params:
@@ -142,21 +172,19 @@ functions:
           set +e
 
           # Start local ADF
-          ./resources/run_adf.sh start &&
+          $COMMON_TEST_INFRA_DIR/test-environment/run_adf.sh start &&
 
           # Import dataset to MongoDB
-          ./mongoimport.exe --uri="mongodb://$ADF_TEST_LOCAL_HOST:$MDB_TEST_LOCAL_PORT/supplies" \
+          ./mongoimport.exe --uri="mongodb://$ADF_TEST_LOCAL_HOST:$MDB_TEST_LOCAL_PORT/integration_test_2" \
             --drop resources/integration_test/testdata/sales.json &&
           ./mongoimport.exe --uri="mongodb://$ADF_TEST_LOCAL_HOST:$MDB_TEST_LOCAL_PORT/integration_test" \
             --drop resources/integration_test/testdata/complex_types.json &&
 
-          MONGOSHELL=$(find ./local_adf/ | grep mongosh.exe | head -1) &&
-
           # Generate schema on imported data
-          $MONGOSHELL -u $ADF_TEST_LOCAL_USER --password $ADF_TEST_LOCAL_PWD --authenticationDatabase \
+          "$DRIVERS_TOOLS/mongodb/bin/mongosh" -u $ADF_TEST_LOCAL_USER --password $ADF_TEST_LOCAL_PWD --authenticationDatabase \
             $ADF_TEST_LOCAL_AUTH_DB $ADF_TEST_LOCAL_HOST/admin \
             --eval 'db.runCommand({sqlGenerateSchema: 1,
-            sampleNamespaces: ["integration_test.complex_types", "supplies.sales"], setSchemas: true})' &&
+            sampleNamespaces: ["integration_test.complex_types", "integration_test_2.sales"], setSchemas: true})' &&
 
           # Set credentials for the queryFiles
           echo $(eval echo $(cat resources/credentials.json )) | tools/PQTest.exe set-credential \
@@ -187,7 +215,7 @@ functions:
           fi
 
           # Stop local ADF, always run this to keep task from hanging
-          ./resources/run_adf.sh stop
+          $COMMON_TEST_INFRA_DIR/test-environment/run_adf.sh stop
           exit $EXITCODE
 
   "setup ODBC driver on Windows":
@@ -361,7 +389,10 @@ tasks:
       - name: build
     commands:
       - func: "install mongoimport tool"
-      - func: "generate github token"
+      - func: "prepare resources"
+      - func: "update orchestrator mongod port"
+      - func: "bootstrap mongo-orchestration"
+      - func: "generate sql-engines github token"
       - func: "run integration test"
 
   - name: sign
@@ -382,7 +413,7 @@ tasks:
       - func: "fetch signed connector"
       - func: "upload release"
 
-  - name: test-release
+  - name: patch-release
     patch_only: true
     depends_on:
       - name: sign
@@ -415,16 +446,13 @@ task_groups:
 buildvariants:
   - name: windows-64
     display_name: "Windows"
+    run_on: [ windows-64-vsMulti-small ]
+    modules:
+      - sql-engines-common-test-infra
     tasks:
       - name: build
-        run_on: [windows-64-vs2019-large]
       - name: test-integration-group
-        run_on: [windows-64-vs2019-large]
       - name: sign
-        run_on: [windows-64-vs2015-large]
       - name: release
-        run_on: [windows-64-vs2019-large]
-      - name: test-release
-        run_on: [windows-64-vs2019-large]
+      - name: patch-release
       - name: download-center-update
-        run_on: [windows-64-vs2019-large]
