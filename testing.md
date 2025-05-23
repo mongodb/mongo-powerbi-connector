@@ -43,10 +43,10 @@ Download and install [MongoDB Command Line Database Tools](https://www.mongodb.c
 Add mongoimport.exe to the `PATH` and change permissions to make it executable.
 #### Load Sample Dataset
 ```
-mongoimport.exe --uri="mongodb://$ADF_TEST_LOCAL_HOST:$MDB_TEST_LOCAL_PORT/supplies" \
-            --drop resources/integration_test/testdata/sales.json
 mongoimport.exe --uri="mongodb://$ADF_TEST_LOCAL_HOST:$MDB_TEST_LOCAL_PORT/integration_test" \
             --drop resources/integration_test/testdata/complex_types.json
+mongoimport.exe --uri="mongodb://$ADF_TEST_LOCAL_HOST:$MDB_TEST_LOCAL_PORT/integration_test_2" \
+            --drop resources/integration_test/testdata/sales.json
 ```
 #### Generate Schema
 Generate the schema for the data that was loaded using the `mongo.exe` executable downloaded by the `run_adf.sh` script
@@ -56,7 +56,7 @@ chmod +x $MONGOSHELL
 $MONGOSHELL -u $ADF_TEST_LOCAL_USER --password $ADF_TEST_LOCAL_PWD --authenticationDatabase \
             $ADF_TEST_LOCAL_AUTH_DB $ADF_TEST_LOCAL_HOST/admin \
             --eval 'db.runCommand({sqlGenerateSchema: 1,
-            sampleNamespaces: ["integration_test.complex_types", "supplies.sales"], setSchemas: true})'
+            sampleNamespaces: ["integration_test.complex_types", "integration_test_2.sales"], setSchemas: true})'
 ```
 #### Clear Power BI Cache
 It is a good idea to clear the data cache and data source settings to ensure the connector is being correctly tested.
@@ -94,7 +94,7 @@ Test that the expected tables are shown in the navigation table and that data is
 Test that data is loaded in the expected format when running a native query.
 * `Get Data` -> `More...` -> `Database` -> `MongoDB Atlas SQL`
 * Enter MongoDB URI: `mongodb://localhost/?ssl=false`
-* Enter Database: `supplies`
+* Enter Database: `integration_test_2`
 * Enter SQL Statement: `select * from sales`
 * Click `OK`
 * Verify that the expected preview loads
@@ -133,13 +133,13 @@ The following query is sufficient to test Native Query as it exercises mutliple 
 1. Ensure you have a local ADF running following the steps from [Setup](Setup) Section.
 - Load data
     ```
-    ./mongoimport.exe --uri="mongodb://$ADF_TEST_LOCAL_HOST:$MDB_TEST_LOCAL_PORT/supplies" --drop resources/integration_test/testdata/sales.json
+    ./mongoimport.exe --uri="mongodb://$ADF_TEST_LOCAL_HOST:$MDB_TEST_LOCAL_PORT/integration_test_2" --drop resources/integration_test/testdata/sales.json
     ```
 - Set the ADF schema
     ```
     MONGOSH=$(find ./local_adf/ | grep mongo.exe | head -1)
     # Replace with the namespace you are adding
-    $MONGOSH  -u mhuser -p pencil --eval 'db.runCommand({sqlGenerateSchema: 1, sampleNamespaces: ["supplies.sales"], setSchemas: true})' localhost/admin
+    $MONGOSH  -u mhuser -p pencil --eval 'db.runCommand({sqlGenerateSchema: 1, sampleNamespaces: ["integration_test_2.sales"], setSchemas: true})' localhost/admin
     ```
 
 2. Build the Connector, if necessary, following the instructions from the [Build](Build) Section.
@@ -181,14 +181,14 @@ Each Direct Query test we want to run is stored in the `resources/direct_query` 
 1. Ensure you have a local ADF running using the instructions from the [Setup](Setup) Section.
 - Load data
     ```
-    ./mongoimport.exe --uri="mongodb://$ADF_TEST_LOCAL_HOST:$MDB_TEST_LOCAL_PORT/reports" --drop resources/integration_test/testdata/transforms.json
-    ./mongoimport.exe --uri="mongodb://$ADF_TEST_LOCAL_HOST:$MDB_TEST_LOCAL_PORT/reports" --drop resources/integration_test/testdata/table_ops.json
+    ./mongoimport.exe --uri="mongodb://$ADF_TEST_LOCAL_HOST:$MDB_TEST_LOCAL_PORT/db2" --drop resources/integration_test/testdata/transforms.json
+    ./mongoimport.exe --uri="mongodb://$ADF_TEST_LOCAL_HOST:$MDB_TEST_LOCAL_PORT/db2" --drop resources/integration_test/testdata/table_ops.json
     ```
 - Set the ADF schema
     ```
     MONGOSH=$(find ./local_adf/ | grep mongo.exe | head -1)
     # Replace with the namespace you are adding
-    $MONGOSH  -u mhuser -p pencil --eval 'db.runCommand({sqlGenerateSchema: 1, sampleNamespaces: ["reports.transforms", "reports.table_ops"], setSchemas: true})' localhost/admin
+    $MONGOSH  -u mhuser -p pencil --eval 'db.runCommand({sqlGenerateSchema: 1, sampleNamespaces: ["db2.transforms", "reports.table_ops"], setSchemas: true})' localhost/admin
     ```
 
 2. Build the Connector, if necessary, following the steps from the (Build)[Build] Section.
@@ -198,8 +198,8 @@ Each Direct Query test we want to run is stored in the `resources/direct_query` 
 6. Connect to your local ADF.
 - The URI should be `mongodb://localhost` (unless $ADF_TEST_LOCAL_HOST differs)
 - Make sure to select the Direct Query radio button instead of Import
-- The database is `reports`.
-7. When the data explorer comes up, select the `reports` database and checkbox both collections:
+- The database is `db2`.
+7. When the data explorer comes up, select the `db2` database and checkbox both collections:
 - `transforms`
 - `table_ops`
 8. Open the `Advanced Query Editor` for the `transforms` table

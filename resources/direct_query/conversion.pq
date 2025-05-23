@@ -1,7 +1,7 @@
 let
-    Source = MongoDBAtlasODBC.Contents("mongodb://localhost", "reports", []),
-    reports_Database = Source{[Name="reports",Kind="Database"]}[Data],
-    transforms_Table = reports_Database{[Name="transforms",Kind="Table"]}[Data],
+    Source = MongoDBAtlasODBC.Contents("mongodb://localhost", "db2", []),
+    db2_Database = Source{[Name="db2",Kind="Database"]}[Data],
+    transforms_Table = db2_Database{[Name="transforms",Kind="Table"]}[Data],
     #"Changed Type" = Table.TransformColumnTypes(transforms_Table,{
         {"bool0", Int64.Type},
         {"bool1", type text},

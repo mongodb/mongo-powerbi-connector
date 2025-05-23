@@ -1,7 +1,7 @@
 let
-    Source = MongoDBAtlasODBC.Contents("mongodb://localhost", "reports", []),
-    reports_Database = Source{[Name="reports",Kind="Database"]}[Data],
-    table_ops_Table = reports_Database{[Name="table_ops",Kind="Table"]}[Data],
+    Source = MongoDBAtlasODBC.Contents("mongodb://localhost", "db2", []),
+    db2_Database = Source{[Name="db2",Kind="Database"]}[Data],
+    table_ops_Table = db2_Database{[Name="table_ops",Kind="Table"]}[Data],
     #"Sorted Rows" = Table.Sort(table_ops_Table,{{"bool0", Order.Ascending}, {"_id", Order.Descending}}),
     #"Kept Duplicates" = let columnNames = {"bool0"}, addCount = Table.Group(#"Sorted Rows", columnNames, {{"Count", Table.RowCount, type number}}), selectDuplicates = Table.SelectRows(addCount, each [Count] > 1), removeCount = Table.RemoveColumns(selectDuplicates, "Count") in Table.Join(#"Sorted Rows", columnNames, removeCount, columnNames, JoinKind.Inner),
     #"Kept First Rows" = Table.FirstN(#"Kept Duplicates",10),

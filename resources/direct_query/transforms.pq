@@ -1,5 +1,5 @@
 let
-    Source = MongoDBAtlasODBC.Contents("mongodb://localhost", "reports", []),
+    Source = MongoDBAtlasODBC.Contents("mongodb://localhost", "db2", []),
     reports_Database = Source{[Name="reports",Kind="Database"]}[Data],
     transforms_Table = reports_Database{[Name="transforms",Kind="Table"]}[Data],
     #"Lowercased Text" = Table.TransformColumns(transforms_Table,{
