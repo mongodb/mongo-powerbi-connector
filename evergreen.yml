@@ -164,7 +164,7 @@ functions:
       params:
         env:
           GITHUB_TOKEN: "${github_token}"
-        add_expansions_to_env: true
+        add_expansions_to_env: false
         shell: bash
         working_dir: mongo-powerbi-connector
         script: |
