@@ -1,4 +1,4 @@
-# MongoDB Atlas SQL interface
+# MongoDB SQL Interface
 
 > [!Note]
 > The following connector article is provided by MongoDB, the owner of this connector and a member of the Microsoft Power Query Connector Certification Program. If you have questions regarding the content of this article or have changes you would like to see made to this article, visit the MongoDB website and use the support channels there.
@@ -12,7 +12,7 @@
 | Authentication Types Supported     | Database (Username/Password)                 |
 
 ## Prerequisites
-To use the MongoDB Atlas SQL connector, you must have an [Atlas federated database](https://www.mongodb.com/docs/atlas/data-federation/) setup.
+To use the MongoDB SQL Interface connector, you must have an [Atlas federated database](https://www.mongodb.com/docs/atlas/data-federation/) setup.
 
 ### Obtaining connection information for your federated database instance
 
@@ -25,7 +25,7 @@ To use the MongoDB Atlas SQL connector, you must have an [Atlas federated databa
 > [!NOTE]
 > If some or all of your data comes from an Atlas cluster, you must use MongoDB version 5.0 or greater for that cluster to take advantage of Atlas SQL.
 
-The [MongoDB Atlas SQL ODBC Driver](https://www.mongodb.com/try/download/odbc-driver) is required to use the MongoDB Atlas SQL Connector.
+The [MongoDB Atlas SQL ODBC Driver](https://www.mongodb.com/try/download/odbc-driver) is required to use the MongoDB SQL Interface Connector.
 
 ## Capabilities Supported
 
@@ -38,16 +38,16 @@ To connect using the Atlas SQL interface:
 
 1. Select **Get Data** from the **Home** ribbon in Power BI Desktop.
 
-2. Select **Database** from the categories on the left, select **MongoDB Atlas SQL**, and then select **Connect**.  
+2. Select **Database** from the categories on the left, select **MongoDB SQL Interface**, and then select **Connect**.  
 
-   ![Get Data from MongoDB Atlas SQL](./media/mongodb/mongodb_get_data.png)
+   ![Get Data from MongoDB SQL Interface](./media/mongodb/mongodb_get_data.png)
 
-3. If you're connecting to the MongoDB Atlas SQL connector for the first time, a third-party notice is displayed. 
+3. If you're connecting to the MongoDB SQL Interface connector for the first time, a third-party notice is displayed. 
    Select **"Don't warn me again with this connector"** if you don't want this message to be displayed again.
 
    Select **Continue**. 
 
-4. In the MongoDB Atlas SQL window that appears, fill in the following values:
+4. In the MongoDB SQL Interface window that appears, fill in the following values:
 
    - The **MongoDB URI**. _Required_ \
      Use the MongoDB URI obtained [in the prerequisites](#obtaining-connection-information-for-your-federated-database-instance).  Make sure that it doesn't contain your username and password. URIs containing username and/or passwords are rejected.
@@ -80,7 +80,7 @@ To connect using the Atlas SQL interface:
 
 To connect using the Atlas SQL interface:
 
-1. Select **MongoDB Atlas SQL** from the **Power Query - Choose data source** page.
+1. Select **MongoDB SQL Interface** from the **Power Query - Choose data source** page.
 2. On the **Connection settings** page, fill in the following values:
     - The **MongoDB URI**. _Required_.   
       Use the MongoDB URI obtained [in the prerequisites](#obtaining-connection-information-for-your-federated-database-instance).  Make sure that it doesn't contain your username and password. URIs containing username and/or passwords are rejected.

@@ -71,7 +71,7 @@ It is a good idea to clear the data cache and data source settings to ensure the
 ## Running Tests
 ### Navigation Table
 Test that the expected tables are shown in the navigation table and that data is loaded in the expected format.
-* `Get Data` -> `More...` -> `Database` -> `MongoDB Atlas SQL`
+* `Get Data` -> `More...` -> `Database` -> `MongoDB SQL Interface`
 * Enter MongoDB URI: `mongodb://localhost/?ssl=false`
 * Enter Database: `integration_test`
 * Click `OK`
@@ -92,7 +92,7 @@ Test that the expected tables are shown in the navigation table and that data is
 
 ### Query
 Test that data is loaded in the expected format when running a native query.
-* `Get Data` -> `More...` -> `Database` -> `MongoDB Atlas SQL`
+* `Get Data` -> `More...` -> `Database` -> `MongoDB SQL Interface`
 * Enter MongoDB URI: `mongodb://localhost/?ssl=false`
 * Enter Database: `integration_test_2`
 * Enter SQL Statement: `select * from sales`
@@ -145,7 +145,7 @@ The following query is sufficient to test Native Query as it exercises mutliple 
 2. Build the Connector, if necessary, following the instructions from the [Build](Build) Section.
 3. Start Power BI and ensure the Data Cache has been cleared.
 4. Choose *Get Data*
-5. Search for "mongodb" in the search box, and select the *MongoDB Atlas SQL* connector.
+5. Search for "mongodb" in the search box, and select the *MongoDB SQL Interface* connector.
 6. Connect to your local ADF.
 - The URI should be `mongodb://localhost` (unless $ADF_TEST_LOCAL_HOST differs)
 - The database is `integration_test`.
@@ -194,7 +194,7 @@ Each Direct Query test we want to run is stored in the `resources/direct_query` 
 2. Build the Connector, if necessary, following the steps from the (Build)[Build] Section.
 3. Start Power BI and ensure the Data Cache has been cleared.
 4. Choose *Get Data*
-5. Search for "mongodb" in the search box, and select the *MongoDB Atlas SQL* connector.
+5. Search for "mongodb" in the search box, and select the *MongoDB SQL Interface* connector.
 6. Connect to your local ADF.
 - The URI should be `mongodb://localhost` (unless $ADF_TEST_LOCAL_HOST differs)
 - Make sure to select the Direct Query radio button instead of Import
