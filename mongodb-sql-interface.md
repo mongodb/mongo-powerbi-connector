@@ -99,7 +99,7 @@ To connect using the MongoDB SQL interface:
     - Your **Database** name. _Required_  
       If you're using Atlas, use the name of the federated database obtained [in the prerequisites](#Prerequisites). If you're self-managed, use the name of the database you'd like to connect to.
 
-   [//]: # (![Connection Settings](./media/mongodb/mongodb_connect_to_data_source.png)
+   ![Connection Settings](./media/mongodb/mongodb_connect_to_data_source.png)
 
 3. In the **Navigator** screen, select the data you require, and then select **Transform data**. This selection opens the Power Query editor so that you can filter and refine the set of data you want to use.  
 
