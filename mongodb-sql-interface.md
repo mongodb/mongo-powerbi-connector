@@ -16,7 +16,7 @@
 
 ## Prerequisites
 There are two ways to use the MongoDB SQL Interface: In Atlas (The Cloud) or Self-Managed (On-Premises). 
-1. To use the MongoDB SQL Interface connector in Atlas, you must have an [Atlas federated database](https://www.mongodb.com/docs/atlas/data-federation/) setup. 
+1. To use the MongoDB SQL Interface in Atlas, you must have an [Atlas federated database](https://www.mongodb.com/docs/atlas/data-federation/) setup. 
    - Here is the [MongoDB documentation to set up Power BI in Atlas](https://www.mongodb.com/docs/atlas/data-federation/query/connect-with-sql-composable/?deployment-type=atlas&sql-driver=power-bi) 
 2. To use it Self-Managed, you must first create schemas with the [mongodb-schema-manager.exe](https://www.mongodb.com/try/download/sql-schema-builder).
    - Here is the [MongoDB documentation to set up Power BI on a Self-Managed cluster](https://www.mongodb.com/docs/atlas/data-federation/query/connect-with-sql-composable/?deployment-type=self&sql-driver=power-bi&os=windows).
@@ -35,9 +35,14 @@ There are two ways to use the MongoDB SQL Interface: In Atlas (The Cloud) or Sel
 ### Obtaining connection information for Self-Managed systems
 In this case, the connection information is maintained by your organization, so you'll have to work with them to get it.
 
-### Install the ODBC driver and Power BI Connector
-The [MongoDB Atlas SQL ODBC Driver](https://www.mongodb.com/try/download/odbc-driver) and [Power BI Connector](https://www.mongodb.com/try/download/power-bi-connector) are required to use the MongoDB SQL Interface Connector.
-You must download and install both of them.
+### Install the ODBC driver and (optionally) the latest Power BI Connector
+The [MongoDB Atlas SQL ODBC Driver](https://www.mongodb.com/try/download/odbc-driver) is required to use the MongoDB SQL Interface. You must download and install it.
+
+Optionally, you can also download and install the latest [Power BI Connector](https://www.mongodb.com/try/download/power-bi-connector) if you wish to have the most up-to-date version.
+
+> [!Note]
+> There's lag time between MongoDB's latest Power BI Connector release and Microsoft supporting it natively in Power BI, so you may need to download the latest version for
+> newer features/capabilities and bug fixes. 
 
 ## Capabilities Supported
 
@@ -50,11 +55,13 @@ To connect using the MongoDB SQL interface:
 
 1. Select **Get Data** from the **Home** ribbon in Power BI Desktop.
 
-2. Select **Database** from the categories on the left, select **MongoDB SQL Interface (Custom)**, and then select **Connect**.  
+2. Select **Database** from the categories on the left, select **MongoDB SQL Interface**, and then select **Connect**.
+   > [!Note]
+   > If you installed a newer version of the Power BI connector, it might show as "MongoDB SQL Interface (Custom)" instead. 
 
    ![Get Data from MongoDB SQL Interface](./media/mongodb/mongodb_get_data.png)
 
-3. If you're connecting to the MongoDB SQL Interface connector for the first time, a third-party notice is displayed. 
+3. If you're connecting to the MongoDB SQL Interface for the first time, a third-party notice is displayed. 
    Select **"Don't warn me again with this connector"** if you don't want this message to be displayed again.
 
    Select **Continue**. 
