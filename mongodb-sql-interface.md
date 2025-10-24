@@ -56,8 +56,8 @@ To connect using the MongoDB SQL interface:
 1. Select **Get Data** from the **Home** ribbon in Power BI Desktop.
 
 2. Select **Database** from the categories on the left, select **MongoDB SQL Interface**, and then select **Connect**.
-   > [!Note]
-   > If you installed a newer version of the Power BI connector, it might show as "MongoDB SQL Interface (Custom)" instead. 
+> [!Note]
+> If you installed a newer version of the Power BI connector, it might show as "MongoDB SQL Interface (Custom)" instead. 
 
    ![Get Data from MongoDB SQL Interface](./media/mongodb/mongodb_get_data.png)
 
@@ -87,8 +87,8 @@ To connect using the MongoDB SQL interface:
 
    ![Authentication](./media/mongodb/mongodb_authentication.png)  
 
-   > [!NOTE]
-   > Once you enter your username and password for a particular database, Power BI Desktop uses those same credentials in subsequent connection attempts. You can modify those credentials by going to **File** > **Options and settings** > **Data source settings**.  
+> [!Note]
+> Once you enter your username and password for a particular database, Power BI Desktop uses those same credentials in subsequent connection attempts. You can modify those credentials by going to **File** > **Options and settings** > **Data source settings**.  
 
 6. In **Navigator**, select one or multiple elements to import and use in Power BI Desktop. 
    Then select either **Load** to load the table in Power BI Desktop, or **Transform Data** to open the Power Query 
