@@ -41,7 +41,7 @@ The [MongoDB Atlas SQL ODBC Driver](https://www.mongodb.com/try/download/odbc-dr
 Optionally, you can also download and install the latest [Power BI Connector](https://www.mongodb.com/try/download/power-bi-connector) if you wish to have the most up-to-date version.
 
 > [!Note]
-> There's lag time between MongoDB's latest Power BI Connector release and Microsoft supporting it natively in Power BI, so you may need to download the latest version for
+> The release roll-out in Power BI is a separate process, and it can take some time before the next release is available. You may need to download the latest version for
 > newer features/capabilities and bug fixes. 
 
 ## Capabilities Supported
