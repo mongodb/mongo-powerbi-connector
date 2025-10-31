@@ -36,7 +36,7 @@ MongoDBAtlasODBCType = type function (
     ),
     optional options as record
 ) as table meta [
-    Documentation.Name = "MongoDB Atlas SQL"
+    Documentation.Name = "MongoDB SQL Interface"
 ];
 
 MongoDBAtlasODBCImpl = (mongodbUri as text, database as text, optional options as record) as table =>
