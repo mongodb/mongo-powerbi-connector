@@ -40,6 +40,11 @@ functions:
         working_dir: mongo-powerbi-connector
         script: |
           ${prepare_shell}
+          # [SQL-3097] The latest PowerQuery.SdkTools is currently broken. 
+          # It bundles different versions of System.Threading.Tasks.Extensions.dll which causes MakePQX to fail
+          cp tools/Mashup/ADO.NET\ Providers/MashupSql2/System.Threading.Tasks.Extensions.dll tools/System.Threading.Tasks.Extensions.dll
+          cp tools/Mashup/ADO.NET\ Providers/MashupSql2/System.Threading.Tasks.Extensions.dll tools/Mashup/ContainerPrivate/System.Threading.Tasks.Extensions.dll
+
           if $UPDATE_PLUGIN_VERSION; then
             sed -i "s/\[Version = \"0.0.0\"\]/\[Version = \"${RELEASE_VERSION}\"\]/g" \
               connector/MongoDBAtlasODBC.pq
