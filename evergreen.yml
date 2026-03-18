@@ -33,6 +33,18 @@ include:
     module: sql-engines-common-test-infra
 
 functions:
+  "MakePQX dependency fix":
+    - command: shell.exec
+      params:
+        shell: bash
+        working_dir: mongo-powerbi-connector
+        script: |
+          ${prepare_shell}
+          # [SQL-3097] The latest PowerQuery.SdkTools is currently broken and has mismatched dependencies, one set used by MakePQX, the other set used by PQTest. 
+          # It bundles different versions of System.Threading.Tasks.Extensions.dll which causes MakePQX to fail
+          cp tools/Mashup/ADO.NET\ Providers/MashupSql2/System.Threading.Tasks.Extensions.dll tools/System.Threading.Tasks.Extensions.dll
+          cp tools/Mashup/ADO.NET\ Providers/MashupSql2/System.Threading.Tasks.Extensions.dll tools/Mashup/ContainerPrivate/System.Threading.Tasks.Extensions.dll
+
   "build connector":
     - command: shell.exec
       params:
@@ -381,6 +393,7 @@ pre:
 tasks:
   - name: build
     commands:
+      - func: "MakePQX dependency fix"
       - func: "build connector"
       - func: "upload packaged connector"
 
@@ -402,7 +415,7 @@ tasks:
       - name: integration-test
     commands:
       - func: "fetch packaged connector"
-      - func: "install power query tools"
+      - func: "MakePQX dependency fix"
       - func: "sign connector"
       - func: "upload signed connector"
 
