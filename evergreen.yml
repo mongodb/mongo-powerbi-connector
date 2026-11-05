@@ -33,18 +33,6 @@ include:
     module: sql-engines-common-test-infra
 
 functions:
-  "MakePQX dependency fix":
-    - command: shell.exec
-      params:
-        shell: bash
-        working_dir: mongo-powerbi-connector
-        script: |
-          ${prepare_shell}
-          # [SQL-3097] The latest PowerQuery.SdkTools is currently broken and has mismatched dependencies, one set used by MakePQX, the other set used by PQTest. 
-          # It bundles different versions of System.Threading.Tasks.Extensions.dll which causes MakePQX to fail
-          cp tools/Mashup/ADO.NET\ Providers/MashupSql2/System.Threading.Tasks.Extensions.dll tools/System.Threading.Tasks.Extensions.dll
-          cp tools/Mashup/ADO.NET\ Providers/MashupSql2/System.Threading.Tasks.Extensions.dll tools/Mashup/ContainerPrivate/System.Threading.Tasks.Extensions.dll
-
   "build connector":
     - command: shell.exec
       params:
@@ -167,7 +155,10 @@ functions:
         working_dir: mongo-powerbi-connector
         script: |
           ${prepare_shell}
-          curl  -L -o tools.zip https://www.nuget.org/api/v2/package/Microsoft.PowerQuery.SdkTools/
+          # Pinned so that new SdkTools releases can't break the build. To upgrade, bump the version and run the
+          # build, integration-test and sign tasks in a patch.
+          SDK_TOOLS_VERSION=2.160.2
+          curl  -L -o tools.zip https://www.nuget.org/api/v2/package/Microsoft.PowerQuery.SdkTools/$SDK_TOOLS_VERSION
           unzip -n tools.zip
           chmod -R +x tools/*
 
@@ -285,7 +276,7 @@ functions:
           echo -ne $SELF_SIGNED_KEY | sed 's| PRIVATE |PRIVATE|g' | sed 's| |\n|g' | sed 's|PRIVATE| PRIVATE |g' > mdb-self-signed-key.pem
           # Convert certificate to pfx format, used by MakePQX.exe
           openssl pkcs12 -export -out mdb-self-signed-certificate.pfx -inkey mdb-self-signed-key.pem -in mdb-self-signed-certificate.crt -password pass:$SELF_SIGNED_PWD
-          tools/MakePQX.exe sign MongoDBAtlasODBC.pqx --certificate  mdb-self-signed-certificate.pfx --password $SELF_SIGNED_PWD
+          printf '%s' "$SELF_SIGNED_PWD" | tools/MakePQX.exe sign MongoDBAtlasODBC.pqx --certificate mdb-self-signed-certificate.pfx --password-input stdin
           tools/MakePQX.exe verify MongoDBAtlasODBC.pqx
           cp MongoDBAtlasODBC.pqx MongoDBAtlasODBC-signed.pqx
 
@@ -394,7 +385,6 @@ pre:
 tasks:
   - name: build
     commands:
-      - func: "MakePQX dependency fix"
       - func: "build connector"
       - func: "upload packaged connector"
 
@@ -416,7 +406,6 @@ tasks:
       - name: integration-test
     commands:
       - func: "fetch packaged connector"
-      - func: "MakePQX dependency fix"
       - func: "sign connector"
       - func: "upload signed connector"
 
